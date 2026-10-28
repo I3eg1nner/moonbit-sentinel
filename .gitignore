@@ -10,3 +10,4 @@ moon.pkg.lock
 *.log
 tmp/
 .DS_Store
+.env

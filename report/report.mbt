@@ -25,3 +25,44 @@ pub fn human_summary(r : Report) -> String {
   }
   sb.to_string()
 }
+
+///|
+/// Markdown 摘要（GitHub step summary / PR 评论用）：
+/// verdict 徽标 + 风险分 + 按严重度分组的 findings 表
+pub fn summary_md(r : Report) -> String {
+  let badge = match r.verdict {
+    "Malicious" => "🔴"
+    "Suspicious" => "🟡"
+    "Clean" => "🟢"
+    _ => "⚪"
+  }
+  let sb = StringBuilder()
+  sb <+ "## \{badge} mooncake-audit: \{r.verdict}\n\n"
+  sb <+ "- module: `\{r.module}`@\{r.version}\n"
+  sb <+ "- risk: **\{r.risk}** (\{r.findings.length()} findings)\n\n"
+  let order : Array[@engine.Severity] = [Critical, High, Medium, Low]
+  for sev in order {
+    let group = r.findings.filter(f => f.severity == sev)
+    if group.length() == 0 {
+      continue
+    }
+    sb <+ "### \{sev_name_md(sev)} (\{group.length()})\n\n"
+    sb <+ "| rule | location | detail |\n|---|---|---|\n"
+    for f in group {
+      let loc = if f.file is "" { "-" } else { "`\{f.file}:\{f.line}`" }
+      sb <+ "|\{f.rule}|\{loc}|\{f.message}|\n"
+    }
+    sb <+ "\n"
+  }
+  sb.to_string()
+}
+
+///|
+fn sev_name_md(s : @engine.Severity) -> String {
+  match s {
+    Low => "Low"
+    Medium => "Medium"
+    High => "High"
+    Critical => "Critical"
+  }
+}

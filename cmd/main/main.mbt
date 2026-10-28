@@ -18,7 +18,7 @@ pub(all) enum Cmd {
 ///|
 /// 输出格式：human（默认）/ json / sarif
 fn parse_format(v : String) -> String {
-  if v is ("json" | "sarif" | "human") {
+  if v is ("json" | "sarif" | "human" | "md") {
     v
   } else {
     "human"
@@ -139,7 +139,7 @@ fn usage() -> String {
   "  --version v           package version for the report\n" +
   "  --hotlist file        popular-module list (default: builtin top-100)\n" +
   "  --min-severity s      low|medium|high|critical filter\n" +
-  "  --format s            human|json|sarif (default human)\n" +
+  "  --format s            human|json|sarif|md (default human)\n" +
   "  --explain             print the score breakdown (implies human format)\n" +
   "  --fail-on s           exit non-zero when verdict is malicious|suspicious (CI)\n"
 }
@@ -178,6 +178,8 @@ async fn main {
       }
       if c.format is "sarif" {
         println(@report.to_sarif(r))
+      } else if c.format is "md" {
+        println(@report.summary_md(r))
       } else if c.format is "json" {
         println(r.to_json_string())
       } else {

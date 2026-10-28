@@ -145,6 +145,15 @@ pub fn rules_catalog() -> Array[RuleDoc] {
       mitigation: "confine writes to the package cache and documented paths",
     },
     {
+      id: "S10",
+      title: "Dropped artifacts",
+      category: "source",
+      default_severity: "High",
+      triggers: "embedded platform binaries (ELF/PE/Mach-O magic) in the package; nested archives; executable scripts with shebangs",
+      example: "bin/drop containing an ELF executable",
+      mitigation: "ship source, not prebuilt binaries; document any bundled assets",
+    },
+    {
       id: "S99",
       title: "Exfiltration combo",
       category: "combo",

@@ -5,6 +5,10 @@
 /// 解码结果本身仍是 base64 主导 → 标记 multi-stage（多级解壳）。
 
 ///|
+/// 数据表防护（如 tokenizer 词表）：单文件载荷告警至多 3 条
+const MAX_PAYLOAD_FINDINGS = 3
+
+///|
 /// payload 危险标记（ASCII 字节串）
 let payload_markers : Array[Bytes] = [
   b"http://", b"https://", b"/bin/sh", b"/bin/bash", b"sh -c", b"#!/", b"curl ",
@@ -47,12 +51,52 @@ fn extract_runs(
 }
 
 ///|
-/// 字节串包含 ASCII 模式（朴素匹配）
-fn bytes_contains(hay : Bytes, needle : Bytes) -> Bool {
+/// URL 标记后是否跟随主机名形态（≥4 个字母数字后接 . 或数字点）：
+/// 词表 token（如单独的 "http://"）不含主机，不应告警
+fn url_has_host(hay : Bytes, at : Int) -> Bool {
+  let n = hay.length()
+  let mut i = at
+  let mut run = 0
+  while i < n {
+    let c = hay[i].to_int()
+    if (c >= 97 && c <= 122) || (c >= 65 && c <= 90) || (c >= 48 && c <= 57) {
+      run = run + 1
+      i = i + 1
+    } else {
+      break
+    }
+  }
+  // IP 形态：数字.数字（至少一段点分）
+  if run >= 1 && i < n && hay[i].to_int() == 46 {
+    let mut j = i + 1
+    let mut digits = 0
+    while j < n {
+      let c = hay[j].to_int()
+      if c >= 48 && c <= 57 {
+        digits = digits + 1
+        j = j + 1
+      } else {
+        break
+      }
+    }
+    if digits >= 1 {
+      return true
+    }
+  }
+  if run < 4 {
+    return false
+  }
+  // 主机后需接 '.'（域名）或 ':'（端口）
+  i < n && (hay[i].to_int() == 46 || hay[i].to_int() == 58)
+}
+
+///|
+/// 返回模式首次出现位置；URL 类模式（http://、https://）要求后随主机名
+fn bytes_find(hay : Bytes, needle : Bytes, is_url : Bool) -> Int? {
   let n = hay.length()
   let m = needle.length()
   if m == 0 || n < m {
-    return false
+    return None
   }
   for i = 0; i <= n - m; i = i + 1 {
     let mut hit = true
@@ -63,10 +107,13 @@ fn bytes_contains(hay : Bytes, needle : Bytes) -> Bool {
       }
     }
     if hit {
-      return true
+      if is_url && !url_has_host(hay, i + m) {
+        continue
+      }
+      return Some(i)
     }
   }
-  false
+  None
 }
 
 ///|
@@ -111,16 +158,25 @@ pub fn s04_payload(ctx : SourceCtx) -> Array[@engine.Finding] {
   }
   let fs : Array[@engine.Finding] = []
   let seen_lines : Array[Int] = []
-  for (start, len) in extract_runs(ctx.content, @matchers.is_b64, 48) {
+  let runs = extract_runs(ctx.content, @matchers.is_b64, 48)
+  // 数据表识别（tokenizer 词表/模型清单）：海量短编码行（>20 个游程）不是攻击载荷
+  if runs.length() > 20 {
+    return fs
+  }
+  for (start, len) in runs {
     guard len <= 4096 else { continue } // 超长 blob 解码成本高，交给原 S04 长度规则
     let candidate = ctx.content[start:start + len].to_owned()
     match try_decode_b64(candidate) {
       Some(bytes) => {
         let mut danger = ""
         for i, marker in payload_markers {
-          if bytes_contains(bytes, marker) {
-            danger = payload_marker_names[i]
-            break
+          let is_url = payload_marker_names[i].contains("url")
+          match bytes_find(bytes, marker, is_url) {
+            Some(_) => {
+              danger = payload_marker_names[i]
+              break
+            }
+            None => ()
           }
         }
         // 无标记但解码结果仍主要是 base64 → 多级解壳
@@ -129,6 +185,9 @@ pub fn s04_payload(ctx : SourceCtx) -> Array[@engine.Finding] {
           danger = "multi-stage base64"
         }
         if danger != "" {
+          if fs.length() >= MAX_PAYLOAD_FINDINGS {
+            break
+          }
           let line = ctx.lines.line_of(start)
           if seen_lines.iter().any(l => l == line) {
             continue

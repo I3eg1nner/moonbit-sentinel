@@ -161,7 +161,7 @@ pub async fn run_scan(root : String, opts : ScanOptions) -> @report.Report {
             content: scanned,
             lines: @matchers.LineIndex::build(scanned),
           }
-          let test_file = @source.is_test_file(relp)
+          let test_file = @source.is_nonproduction_file(relp)
           for rule in rules {
             let (_, rulefn) = rule
             for f in rulefn(ctx) {

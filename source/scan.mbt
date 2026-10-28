@@ -22,6 +22,29 @@ pub fn is_test_file(name : String) -> Bool {
 }
 
 ///|
+/// 非生产代码目录：demo / examples / example / samples / testdata 下的文件
+/// 与测试文件同级降权（真实误报：aegisrun 的 demo/ 攻击推演与规则数据表）。
+pub fn is_demo_file(name : String) -> Bool {
+  let low = name.to_lower()
+  low.has_prefix("demo/") ||
+  low.has_prefix("examples/") ||
+  low.has_prefix("example/") ||
+  low.has_prefix("samples/") ||
+  low.has_prefix("testdata/") ||
+  low.contains("/demo/") ||
+  low.contains("/examples/") ||
+  low.contains("/example/") ||
+  low.contains("/samples/") ||
+  low.contains("/testdata/")
+}
+
+///|
+/// 测试或演示文件（统一降权口径）
+pub fn is_nonproduction_file(name : String) -> Bool {
+  is_test_file(name) || is_demo_file(name)
+}
+
+///|
 /// 行注释剥离：行首（忽略缩进）为 `//` 的行替换为空行，行数不变以保持行号。
 /// 降低注释文字触发的 S02/S03 误报（真实误报：注释里的 "credentials" 字样）。
 /// 保守起见不处理块注释与行尾注释。
@@ -84,8 +107,8 @@ pub fn combine_rules(fs : Array[@engine.Finding]) -> Array[@engine.Finding] {
   }
   let files : Array[String] = []
   for f in fs {
-    // 测试文件不参与组合升级：夹具同时含 raw-IP 与凭据字样属常态
-    if is_test_file(f.file) {
+    // 测试/演示文件不参与组合升级：夹具同时含 raw-IP 与凭据字样属常态
+    if is_nonproduction_file(f.file) {
       continue
     }
     if !files.iter().any(x => x == f.file) {

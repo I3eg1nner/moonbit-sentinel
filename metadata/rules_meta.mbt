@@ -231,10 +231,27 @@ pub fn m04(
   } else {
     author_of(m.name)
   }
-  // GitHub 登录名大小写不敏感（Across2005/across2005 为同一 owner）
+  // GitHub 登录名大小写不敏感（Across2005/across2005 为同一 owner）；
+  // 组织命名变体（tuya vs tuya-me、someorg vs someorg-org）按分隔符前缀匹配
+  // 视为一致：author 以 owner + 分隔符开头（或反之）
+  let ol = owner.to_lower()
+  let al = author.to_lower()
+  let org_variant = (a : String, b : String) => {
+    (
+      a.length() > 0 &&
+      b.length() > a.length() &&
+      (b.has_prefix(a + "-") || b.has_prefix(a + "_") || b.has_prefix(a + "."))
+    ) ||
+    (
+      b.length() > 0 &&
+      a.length() > b.length() &&
+      (a.has_prefix(b + "-") || a.has_prefix(b + "_") || a.has_prefix(b + "."))
+    )
+  }
   if owner.length() > 0 &&
     author.length() > 0 &&
-    owner.to_lower() != author.to_lower() {
+    ol != al &&
+    !org_variant(al, ol) {
     let rd : @engine.RuleDef = {
       id: "M04",
       severity: @engine.Medium,

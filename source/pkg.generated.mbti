@@ -18,6 +18,10 @@ pub fn extract_fenced_code(String) -> String
 
 pub fn extract_runs_for_test(String, Int) -> Array[(Int, Int)]
 
+pub fn is_demo_file(String) -> Bool
+
+pub fn is_nonproduction_file(String) -> Bool
+
 pub fn is_source_file(String) -> Bool
 
 pub fn is_test_file(String) -> Bool

@@ -274,3 +274,52 @@ test "name/url segment helpers" {
     content="0",
   )
 }
+
+///|
+test "m01 exempts same-author hotlist entries" {
+  // 真实案例：vectie/moonclaw 不会被自己的 vectie/moonflow 触发
+  let m = manifest("vectie/moonclaw", "", [])
+  let fs = @metadata.m01(m, ["vectie/moonflow"])
+  inspect(fs.length(), content="0")
+  // 跨作者仍然触发
+  let fs2 = @metadata.m01(m, ["otheruser/moonflow"])
+  inspect(fs2.length(), content="1")
+}
+
+///|
+test "m01 tightens threshold for short repo names" {
+  // 7 字符 repo DL=2 属随机碰撞（moonclaw 对 moonclawx 长度8+，走 DL≤2）；
+  // 此处用 7 字符对 DL=2 验证不再触发
+  let m = manifest("a/moonlib", "", [])
+  let fs = @metadata.m01(m, ["b/moonai"]) // len 7, DL=2
+  inspect(fs.length(), content="0")
+  // 7 字符对 DL=1 仍然触发
+  let fs2 = @metadata.m01(m, ["b/moonlib"]) // 同名跳过，换 DL=1 的
+  let fs3 = @metadata.m01(m, ["b/moonlip"]) // DL=1
+  inspect(fs3.length(), content="1")
+  let _ = fs2
+}
+
+///|
+test "m05 exempts self-owned dependencies" {
+  // 真实案例：mizchi/actrun 依赖自己的 mizchi/moomaid，不再被 moonai 撞名误报
+  let m = manifest("mizchi/actrun", "", ["mizchi/moomaid"])
+  let fs = @metadata.m05(m, ["QuietlyChan/moonai"])
+  inspect(fs.length(), content="0")
+  // 他人名义的近似依赖仍然触发（≥8 字符，DL=1）
+  let m2 = { ..m, deps: ["stranger/moonbitl1"] }
+  let fs2 = @metadata.m05(m2, ["popular/moonbitls"])
+  inspect(fs2.length(), content="1")
+}
+
+///|
+test "m05 short-name near-misses need DL<=1" {
+  // 7 字符 moonlib vs moonai（DL=2）：不再触发
+  let m = manifest("someone/toolbox", "", ["stranger/moonlib"])
+  let fs = @metadata.m05(m, ["QuietlyChan/moonai"])
+  inspect(fs.length(), content="0")
+  // 长名（≥8）维持 DL≤2：moonbitls(9) vs moonbitl1(9) DL=1 触发
+  let m2 = { ..m, deps: ["stranger/moonbitl1"] }
+  let fs2 = @metadata.m05(m2, ["popular/moonbitls"])
+  inspect(fs2.length(), content="1")
+}

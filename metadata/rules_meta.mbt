@@ -65,8 +65,11 @@ fn owner_of_url(url : String) -> String {
 }
 
 ///|
-/// M01：repo 名与 hotlist 中 repo 名 DL ≤2 且不同名 → High（每个模块至多一条，首个命中即止）。
+/// M01：repo 名与 hotlist 中 repo 名 DL ≤2 且不同名且**非同一作者** → High
+/// （每个模块至多一条，首个命中即止）。同一作者不会 typosquat 自己的热门包
+/// （真实案例：vectie/moonclaw vs hotlist 中的 vectie/moonflow，DL=2 但同为 vectie）。
 /// 提供注册表权威名时以权威名的 repo 段参与比对（防 manifest 声明名伪装绕过）。
+/// 短名分级阈值：repo 名 <8 字符时要求 DL ≤1（短名 DL≤2 碰撞过于随机）。
 pub fn m01(
   m : Manifest,
   hotlist : Array[String],
@@ -80,15 +83,22 @@ pub fn m01(
   }
   let cmp = if authoritative != "" { authoritative } else { m.name }
   let repo = repo_of(cmp)
+  let author = author_of(cmp)
+  let threshold = if repo.length() < 8 { 1 } else { 2 }
   let fs : Array[@engine.Finding] = []
   for hot in hotlist {
     let hrepo = repo_of(hot)
     if hrepo == repo {
       continue
     }
-    // 短 repo 名（<5 字符）的 DL ≤2 碰撞过于随机（elk/pkl、json/jsoo）→ 不比对
+    // 同一作者豁免：hot 条目带 author 且与被测模块一致 → 跳过
+    let hauthor = author_of(hot)
+    if hauthor != "" && author != "" && hauthor == author {
+      continue
+    }
+    // 短 repo 名（<5 字符）的 DL 碰撞过于随机（elk/pkl、json/jsoo）→ 不比对
     if repo.length() >= 5 && hrepo.length() >= 5 {
-      if @matchers.damerau_levenshtein(repo, hrepo) <= 2 {
+      if @matchers.damerau_levenshtein(repo, hrepo) <= threshold {
         fs.push(
           rd.finding(
             file="moon.mod",
@@ -226,7 +236,11 @@ pub fn m04(
 }
 
 ///|
-/// M05：依赖 repo 名与 hotlist/官方名 DL ≤2（排除同名）→ High（每依赖一条）
+/// M05：依赖 repo 名与 hotlist/官方名过近（排除同名与**自有依赖**）→ High（每依赖一条）。
+/// 自有依赖豁免：依赖的 author 与模块 author 相同时不构成冒名（真实案例：
+/// mizchi/actrun 依赖自己的 mizchi/moomaid，被 QuietlyChan/moonai 的 DL=2 撞名误报）。
+/// 短名分级阈值：双方 repo 名均 <8 字符时要求 DL ≤1（moonlib/moonai 这类
+/// 7 字符 DL=2 属随机碰撞），≥8 字符维持 DL ≤2。
 pub fn m05(m : Manifest, hotlist : Array[String]) -> Array[@engine.Finding] {
   let rd : @engine.RuleDef = {
     id: "M05",
@@ -234,27 +248,27 @@ pub fn m05(m : Manifest, hotlist : Array[String]) -> Array[@engine.Finding] {
     category: @engine.Metadata,
     description: "dependency confusion",
   }
+  let author = author_of(m.name)
+  let near = (drepo : String, target : String) => {
+    drepo != target &&
+    drepo.length() >= 5 &&
+    target.length() >= 5 && {
+      let cap = if drepo.length() < 8 || target.length() < 8 { 1 } else { 2 }
+      @matchers.damerau_levenshtein(drepo, target) <= cap
+    }
+  }
   let fs : Array[@engine.Finding] = []
   for dep in m.deps {
+    // 自有依赖豁免
+    let dauthor = author_of(dep)
+    if author != "" && dauthor != "" && dauthor == author {
+      continue
+    }
     let drepo = repo_of(dep)
-    // 与 M01 相同的短名护栏：双方 repo 名均 ≥5 才比对（x/y、x/ts 类碰撞过于随机）
-    let near_hot = hotlist
-      .iter()
-      .any(h => {
-        let hrepo = repo_of(h)
-        hrepo != drepo &&
-        drepo.length() >= 5 &&
-        hrepo.length() >= 5 &&
-        @matchers.damerau_levenshtein(drepo, hrepo) <= 2
-      })
+    let near_hot = hotlist.iter().any(h => near(drepo, repo_of(h)))
     let near_official = official_repo_names()
       .iter()
-      .any(o => {
-        o != drepo &&
-        drepo.length() >= 5 &&
-        o.length() >= 5 &&
-        @matchers.damerau_levenshtein(drepo, o) <= 2
-      })
+      .any(o => near(drepo, o))
     if near_hot || near_official {
       fs.push(
         rd.finding(

@@ -1,0 +1,6 @@
+import {
+  "audit/mooncake-audit/engine",
+  "moonbitlang/core/json",
+}
+
+warnings = "-reserved_keyword"

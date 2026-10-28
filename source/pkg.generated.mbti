@@ -12,15 +12,23 @@ pub fn all_source_rules() -> Array[(String, (SourceCtx) -> Array[@engine.Finding
 
 pub fn combine_rules(Array[@engine.Finding]) -> Array[@engine.Finding]
 
+pub fn detect_binary_magic(Bytes) -> BinaryKind?
+
 pub fn downgrade(@engine.Severity) -> @engine.Severity
 
 pub fn extract_fenced_code(String) -> String
 
 pub fn extract_runs_for_test(String, Int) -> Array[(Int, Int)]
 
+pub fn has_shebang(Bytes) -> Bool
+
 pub fn is_demo_file(String) -> Bool
 
+pub fn is_nested_archive(String) -> Bool
+
 pub fn is_nonproduction_file(String) -> Bool
+
+pub fn is_script_file(String) -> Bool
 
 pub fn is_source_file(String) -> Bool
 
@@ -44,11 +52,21 @@ pub fn s07(SourceCtx) -> Array[@engine.Finding]
 
 pub fn s08(SourceCtx) -> Array[@engine.Finding]
 
+pub fn s10_artifact(String, Bytes, Bool, Bool) -> Array[@engine.Finding]
+
 pub fn strip_line_comments(String) -> String
 
 // Errors
 
 // Types and methods
+pub(all) enum BinaryKind {
+  Elf
+  MachO64
+  MachO32
+  MachOFat
+  WindowsPE
+} derive(Eq, @debug.Debug)
+
 pub(all) struct SourceCtx {
   file : String
   content : String

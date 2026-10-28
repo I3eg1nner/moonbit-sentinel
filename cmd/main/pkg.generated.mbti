@@ -19,7 +19,7 @@ pub fn parse_args(Array[String]) -> Cmd
 
 // Types and methods
 pub(all) enum Cmd {
-  Scan(dir~ : String, module~ : String, version~ : String, hotlist~ : String, json~ : Bool, min_sev~ : Int, format~ : String, explain~ : Bool)
+  Scan(dir~ : String, module~ : String, version~ : String, hotlist~ : String, json~ : Bool, min_sev~ : Int, format~ : String, explain~ : Bool, fail_on~ : String)
   Rules
   Help
 } derive(@debug.Debug)

@@ -35,6 +35,18 @@ async fn walk_files(dir : String, acc : Array[String]) -> Unit {
 }
 
 ///|
+/// 读取文件头字节用于 S10 魔数探测；超过 2MB 的文件视为资产（模型/字体）跳过
+async fn read_head_opt(path : String) -> Bytes? {
+  try {
+    let bytes = @fs.read_file(path).binary()
+    guard bytes.length() <= 2 * 1024 * 1024 else { return None }
+    Some(bytes[:16].to_bytes())
+  } catch {
+    _ => None
+  }
+}
+
+///|
 async fn read_opt(path : String) -> String? {
   Some(@fs.read_file(path).text()) catch {
     _ => None
@@ -180,6 +192,21 @@ pub async fn run_scan(root : String, opts : ScanOptions) -> @report.Report {
           }
         }
         None => errors.push("cannot read \{relp}")
+      }
+    } else {
+      // S10：源码/清单之外的文件做落地产物检查（二进制魔数/嵌套压缩包/脚本）
+      match read_head_opt(p) {
+        Some(head) =>
+          for
+            f in @source.s10_artifact(
+              relp,
+              head,
+              @source.is_nested_archive(name),
+              @source.is_script_file(name),
+            ) {
+            findings.push(f)
+          }
+        None => ()
       }
     }
   }

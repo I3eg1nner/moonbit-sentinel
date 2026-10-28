@@ -8,7 +8,8 @@ pub(all) enum Cmd {
     json~ : Bool,
     min_sev~ : Int,
     format~ : String,
-    explain~ : Bool
+    explain~ : Bool,
+    fail_on~ : String
   )
   Rules
   Help
@@ -43,6 +44,7 @@ pub fn parse_args(args : Array[String]) -> Cmd {
   let mut min_sev = 0
   let mut format = "human"
   let mut explain = false
+  let mut fail_on = ""
   let n = args.length()
   let mut i = 1
   while i < n {
@@ -52,6 +54,11 @@ pub fn parse_args(args : Array[String]) -> Cmd {
       format = "json"
     } else if a == "--explain" {
       explain = true
+    } else if a == "--fail-on" {
+      if i + 1 < n && args[i + 1] is ("suspicious" | "malicious") {
+        i += 1
+        fail_on = args[i]
+      }
     } else if a
       is ("--module"
       | "--version"
@@ -80,7 +87,17 @@ pub fn parse_args(args : Array[String]) -> Cmd {
     }
     i += 1
   }
-  Scan(dir~, module~, version~, hotlist~, json~, min_sev~, format~, explain~)
+  Scan(
+    dir~,
+    module~,
+    version~,
+    hotlist~,
+    json~,
+    min_sev~,
+    format~,
+    explain~,
+    fail_on~,
+  )
 }
 
 ///|
@@ -123,7 +140,8 @@ fn usage() -> String {
   "  --hotlist file        popular-module list (default: builtin top-100)\n" +
   "  --min-severity s      low|medium|high|critical filter\n" +
   "  --format s            human|json|sarif (default human)\n" +
-  "  --explain             print the score breakdown (implies human format)\n"
+  "  --explain             print the score breakdown (implies human format)\n" +
+  "  --fail-on s           exit non-zero when verdict is malicious|suspicious (CI)\n"
 }
 
 ///|
@@ -164,6 +182,21 @@ async fn main {
         println(r.to_json_string())
       } else {
         println(@report.human_summary(r))
+      }
+      // CI 退出码：verdict 达到 --fail-on 阈值时非零退出
+      if !(c.fail_on is "") {
+        let breach = if c.fail_on is "malicious" {
+          r.verdict is "Malicious"
+        } else if c.fail_on is "suspicious" {
+          r.verdict is ("Malicious" | "Suspicious")
+        } else {
+          false
+        }
+        if breach {
+          fail(
+            "mooncake-audit: verdict \{r.verdict} meets --fail-on \{c.fail_on}",
+          )
+        }
       }
     }
   }

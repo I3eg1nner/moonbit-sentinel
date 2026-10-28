@@ -5,6 +5,7 @@ import {
   "audit/mooncake-audit/score",
   "moonbitlang/async",
   "moonbitlang/async/fs",
+  "moonbitlang/core/abort",
   "moonbitlang/core/env",
   "moonbitlang/core/json",
 }

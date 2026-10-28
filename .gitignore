@@ -1,0 +1,12 @@
+# Build artifacts
+_build/
+target/
+*.exe
+.mooncakes/
+moon.lock
+moon.pkg.lock
+
+# Logs & scratch
+*.log
+tmp/
+.DS_Store

@@ -9,6 +9,8 @@ import {
 // Values
 pub fn human_summary(Report) -> String
 
+pub fn to_sarif(Report) -> String
+
 // Errors
 
 // Types and methods

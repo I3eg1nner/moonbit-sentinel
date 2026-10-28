@@ -7,6 +7,8 @@ import {
 }
 
 // Values
+pub fn effective_hotlist(Array[String]) -> Array[String]
+
 pub fn filter_min(@report.Report, Int) -> @report.Report
 
 pub async fn load_hotlist(String) -> Array[String]
@@ -17,7 +19,8 @@ pub fn parse_args(Array[String]) -> Cmd
 
 // Types and methods
 pub(all) enum Cmd {
-  Scan(dir~ : String, module~ : String, version~ : String, hotlist~ : String, json~ : Bool, min_sev~ : Int)
+  Scan(dir~ : String, module~ : String, version~ : String, hotlist~ : String, json~ : Bool, min_sev~ : Int, format~ : String, explain~ : Bool)
+  Rules
   Help
 } derive(@debug.Debug)
 

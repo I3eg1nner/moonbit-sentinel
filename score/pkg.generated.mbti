@@ -3,10 +3,15 @@ package "audit/mooncake-audit/score"
 
 import {
   "audit/mooncake-audit/engine",
+  "audit/mooncake-audit/report",
   "moonbitlang/core/debug",
 }
 
 // Values
+pub fn explain_lines(Array[@engine.Finding]) -> Array[ScoreLine]
+
+pub fn explain_text(@report.Report) -> String
+
 pub fn risk_of(Array[@engine.Finding]) -> Int
 
 pub fn verdict_of(Int) -> Verdict
@@ -14,6 +19,14 @@ pub fn verdict_of(Int) -> Verdict
 // Errors
 
 // Types and methods
+pub(all) struct ScoreLine {
+  rule : String
+  severity : @engine.Severity
+  weight : Int
+  file : String
+  note : String
+} derive(@debug.Debug)
+
 pub(all) enum Verdict {
   Clean
   Suspicious

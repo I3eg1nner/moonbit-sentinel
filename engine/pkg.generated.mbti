@@ -6,7 +6,13 @@ import {
 }
 
 // Values
+pub fn catalog_text() -> String
+
 pub fn parse_severity(String) -> Severity?
+
+pub fn rule_by_id(String) -> RuleDoc?
+
+pub fn rules_catalog() -> Array[RuleDoc]
 
 // Errors
 
@@ -33,6 +39,16 @@ pub(all) struct RuleDef {
   description : String
 } derive(ToJson, @debug.Debug)
 pub fn RuleDef::finding(Self, file~ : String, line~ : Int, snippet~ : String, message~ : String) -> Finding
+
+pub(all) struct RuleDoc {
+  id : String
+  title : String
+  category : String
+  default_severity : String
+  triggers : String
+  example : String
+  mitigation : String
+} derive(@debug.Debug)
 
 pub(all) enum Severity {
   Low

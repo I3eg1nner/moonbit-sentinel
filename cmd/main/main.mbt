@@ -6,14 +6,33 @@ pub(all) enum Cmd {
     version~ : String,
     hotlist~ : String,
     json~ : Bool,
-    min_sev~ : Int
+    min_sev~ : Int,
+    format~ : String,
+    explain~ : Bool
   )
+  Rules
   Help
 } derive(Debug)
 
 ///|
+/// 输出格式：human（默认）/ json / sarif
+fn parse_format(v : String) -> String {
+  if v is ("json" | "sarif" | "human") {
+    v
+  } else {
+    "human"
+  }
+}
+
+///|
 pub fn parse_args(args : Array[String]) -> Cmd {
-  if args.length() == 0 || args[0] != "scan" {
+  if args.length() == 0 {
+    return Help
+  }
+  if args[0] is ("rules" | "--rules") {
+    return Rules
+  }
+  if args[0] != "scan" {
     return Help
   }
   let mut dir = ""
@@ -22,19 +41,30 @@ pub fn parse_args(args : Array[String]) -> Cmd {
   let mut hotlist = ""
   let mut json = false
   let mut min_sev = 0
+  let mut format = "human"
+  let mut explain = false
   let n = args.length()
   let mut i = 1
   while i < n {
     let a = args[i]
     if a == "--json" {
       json = true
-    } else if a is ("--module" | "--version" | "--hotlist" | "--min-severity") {
+      format = "json"
+    } else if a == "--explain" {
+      explain = true
+    } else if a
+      is ("--module"
+      | "--version"
+      | "--hotlist"
+      | "--min-severity"
+      | "--format") {
       if i + 1 < n {
         i += 1
         match a {
           "--module" => module = args[i]
           "--version" => version = args[i]
           "--hotlist" => hotlist = args[i]
+          "--format" => format = parse_format(args[i])
           _ =>
             min_sev = match @engine.parse_severity(args[i]) {
               Some(s) => s.rank()
@@ -50,7 +80,7 @@ pub fn parse_args(args : Array[String]) -> Cmd {
     }
     i += 1
   }
-  Scan(dir~, module~, version~, hotlist~, json~, min_sev~)
+  Scan(dir~, module~, version~, hotlist~, json~, min_sev~, format~, explain~)
 }
 
 ///|
@@ -82,7 +112,18 @@ pub fn filter_min(r : @report.Report, min_rank : Int) -> @report.Report {
 
 ///|
 fn usage() -> String {
-  "usage: mooncake-audit scan <dir> [--module m] [--version v] [--hotlist file] [--json] [--min-severity low|medium|high|critical]"
+  "mooncake-audit — static supply-chain detector for mooncakes.io packages\n\n" +
+  "usage:\n" +
+  "  mooncake-audit scan <dir> [options]   scan an extracted package directory\n" +
+  "  mooncake-audit rules                  print the rule catalog\n" +
+  "\n" +
+  "options:\n" +
+  "  --module m            registry module name (enables M06 authoritative checks)\n" +
+  "  --version v           package version for the report\n" +
+  "  --hotlist file        popular-module list (default: builtin top-100)\n" +
+  "  --min-severity s      low|medium|high|critical filter\n" +
+  "  --format s            human|json|sarif (default human)\n" +
+  "  --explain             print the score breakdown (implies human format)\n"
 }
 
 ///|
@@ -95,10 +136,11 @@ async fn main {
   }
   match parse_args(user_args) {
     Help => println(usage())
+    Rules => println(@engine.catalog_text())
     Scan(..) as c => {
       let r = try {
         let opts : @scan.ScanOptions = {
-          hotlist: load_hotlist(c.hotlist),
+          hotlist: effective_hotlist(load_hotlist(c.hotlist)),
           authoritative_name: c.module,
         }
         @scan.run_scan(c.dir, opts)
@@ -112,7 +154,13 @@ async fn main {
       let r = if !(c.module is "") { { ..r, module: c.module, } } else { r }
       let r = if !(c.version is "") { { ..r, version: c.version, } } else { r }
       let r = filter_min(r, c.min_sev)
-      if c.json {
+      if c.explain {
+        println(@score.explain_text(r))
+        return
+      }
+      if c.format is "sarif" {
+        println(@report.to_sarif(r))
+      } else if c.format is "json" {
         println(r.to_json_string())
       } else {
         println(@report.human_summary(r))

@@ -1,5 +1,7 @@
 # mooncake-audit
 
+[![CI](https://github.com/I3eg1nner/mooncake-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/I3eg1nner/mooncake-audit/actions/workflows/ci.yml)
+
 Static supply-chain security detector for [mooncakes.io](https://mooncakes.io) packages, written in MoonBit.
 
 It statically analyzes an extracted package directory — manifests, pre-build hooks, source files, and bundled artifacts — for the behaviors that distinguish **malicious packages** from merely messy ones: typo-squatting of popular names, official-namespace impersonation, install-time command chains, network exfiltration to hardcoded endpoints, credential access, obfuscated payloads, and dropped binaries. Every scan yields a risk score and a verdict: **Malicious / Suspicious / Clean**.

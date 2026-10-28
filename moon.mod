@@ -1,10 +1,10 @@
-name = "audit/mooncake-audit"
+name = "minie135/mooncake-audit"
 
 version = "0.2.0"
 
 readme = "README.md"
 
-repository = "https://github.com/OWNER/mooncake-audit"
+repository = "https://github.com/I3eg1nner/mooncake-audit"
 
 license = "Apache-2.0"
 

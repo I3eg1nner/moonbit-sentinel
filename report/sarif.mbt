@@ -63,7 +63,7 @@ pub fn to_sarif(r : Report) -> String {
         "tool": {
           "driver": {
             "name": "mooncake-audit",
-            "informationUri": "https://mooncakes.io/docs/#/audit/mooncake-audit",
+            "informationUri": "https://mooncakes.io/docs/#/minie135/mooncake-audit",
             "rules": rules,
           },
         },

@@ -1,8 +1,8 @@
 import {
-  "audit/mooncake-audit/engine",
-  "audit/mooncake-audit/engine/scan",
-  "audit/mooncake-audit/report",
-  "audit/mooncake-audit/score",
+  "minie135/mooncake-audit/engine",
+  "minie135/mooncake-audit/engine/scan",
+  "minie135/mooncake-audit/report",
+  "minie135/mooncake-audit/score",
   "moonbitlang/async",
   "moonbitlang/async/fs",
   "moonbitlang/core/abort",

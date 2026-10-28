@@ -72,3 +72,26 @@ test "manifest edge cases" {
   )
   inspect(@metadata.parse_manifest_json("{ nope") is None, content="true")
 }
+
+///|
+test "indented rule() labels never override top-level keys" {
+  // Regression (real-world bobzhang/openseek): moon.mod ends with build
+  // rules whose indented `name:` labels were misread as the module name.
+  let text = "name = \"bobzhang/openseek\"\nversion = \"0.3.2\"\n\nrule(name: \"md_to_mbt_string\", command: \"...\")\nrule(\n  name: \"mbtx_bundle\",\n  version: \"never-a-version\",\n)\n"
+  let m = @metadata.parse_manifest(text).unwrap()
+  inspect(m.name, content="bobzhang/openseek")
+  inspect(m.version, content="0.3.2")
+}
+
+///|
+test "top-level name accepted without space and in label style" {
+  let m = @metadata.parse_manifest("name=\"a/b\"\nversion:\"2.0\"\n").unwrap()
+  inspect(m.name, content="a/b")
+  inspect(m.version, content="2.0")
+}
+
+///|
+test "lookalike keys are not the module name" {
+  let m = @metadata.parse_manifest("name_suffix = \"nope\"\nname = \"real/pkg\"\n").unwrap()
+  inspect(m.name, content="real/pkg")
+}

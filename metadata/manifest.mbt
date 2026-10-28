@@ -30,24 +30,28 @@ pub fn parse_manifest(text : String) -> Manifest? {
       }
       continue
     }
-    if l.has_prefix("name") {
+    // Top-level keys must start at column 0 on the raw line and be followed
+    // by `=`/`:`/whitespace: an indented `name:` label inside a `rule(...)`
+    // block must not override the module name (real-world case: openseek's
+    // `rule(name: "md_to_mbt_string", ...)` was misread as the module name).
+    if is_top_key(line.to_owned(), "name") {
       match first_quoted(l) {
-        Some(v) => name = v
+        Some(v) => if name == "" { name = v }
         None => ()
       }
-    } else if l.has_prefix("version") {
+    } else if is_top_key(line.to_owned(), "version") {
       match first_quoted(l) {
-        Some(v) => version = v
+        Some(v) => if version == "" { version = v }
         None => ()
       }
-    } else if l.has_prefix("repository") {
+    } else if is_top_key(line.to_owned(), "repository") {
       match first_quoted(l) {
-        Some(v) => repository = v
+        Some(v) => if repository == "" { repository = v }
         None => ()
       }
-    } else if l.has_prefix("readme") {
+    } else if is_top_key(line.to_owned(), "readme") {
       match first_quoted(l) {
-        Some(v) => readme = v
+        Some(v) => if readme == "" { readme = v }
         None => ()
       }
     }
@@ -57,6 +61,23 @@ pub fn parse_manifest(text : String) -> Manifest? {
   } else {
     Some({ name, version, repository, readme, deps })
   }
+}
+
+///|
+/// True when `raw` starts at column 0 with `key` immediately followed by an
+/// assignment (`=`/`:`) or whitespace, i.e. a genuine top-level TOML key.
+fn is_top_key(raw : String, key : String) -> Bool {
+  if !raw.has_prefix(key) {
+    return false
+  }
+  let n = raw.length()
+  let kl = key.length()
+  if n == kl {
+    return false
+  }
+  let c = raw[kl]
+  // '=' 61, ':' 58, ' ' 32, '\t' 9
+  c == 61 || c == 58 || c == 32 || c == 9
 }
 
 ///|

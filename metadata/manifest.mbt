@@ -59,7 +59,7 @@ pub fn parse_manifest(text : String) -> Manifest? {
   if name == "" {
     None
   } else {
-    Some({ name, version, repository, readme, deps })
+    Some({ name, version, repository, readme, deps, })
   }
 }
 
@@ -146,7 +146,7 @@ pub fn parse_pkg(text : String) -> PkgInfo {
       }
     }
   }
-  { imports, pre_build }
+  { imports, pre_build, }
 }
 
 ///|
@@ -186,7 +186,7 @@ fn parse_pkg_json(text : String) -> PkgInfo {
   } catch {
     _ => ()
   }
-  { imports, pre_build }
+  { imports, pre_build, }
 }
 
 ///|

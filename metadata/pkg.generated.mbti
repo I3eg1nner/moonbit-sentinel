@@ -7,6 +7,8 @@ import {
 }
 
 // Values
+pub fn classify_prebuild(String) -> (@engine.Severity, String)
+
 pub fn m01(Manifest, Array[String], authoritative? : String) -> Array[@engine.Finding]
 
 pub fn m02(Manifest, authoritative? : String) -> Array[@engine.Finding]

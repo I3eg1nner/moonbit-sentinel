@@ -48,7 +48,7 @@ async test "run_scan m06 fires on manifest/registry name mismatch" {
     create_mode=CreateOrTruncate,
   )
   // 权威名与声明名不一致 → M06 High，且 M 规则以权威名比对（M02 用 evil author 命中）
-  let r = @scan.run_scan(dir, { hotlist: [], authoritative_name: "evil/asynx" })
+  let r = @scan.run_scan(dir, { hotlist: [], authoritative_name: "evil/asynx", })
   let m06 = r.findings.filter(f => f.rule == "M06")
   inspect(m06.length(), content="1")
   debug_inspect(m06[0].severity, content="High")
@@ -82,7 +82,7 @@ async test "run_scan without moon.mod falls back to dir name" {
     "let x = 1\n",
     create_mode=CreateOrTruncate,
   )
-  let r = @scan.run_scan(dir, { hotlist: [], authoritative_name: "" })
+  let r = @scan.run_scan(dir, { hotlist: [], authoritative_name: "", })
   let dirname = match dir.rev_find("/") {
     Some(i) => dir[i + 1:].to_owned()
     None => dir
@@ -104,7 +104,7 @@ async test "run_scan survives symlink loop" {
   )
   // directory symlink cycle: loop -> . would recurse forever pre-fix
   @fs.symlink(target=".", dir + "/loop")
-  let r = @scan.run_scan(dir, { hotlist: [], authoritative_name: "" })
+  let r = @scan.run_scan(dir, { hotlist: [], authoritative_name: "", })
   inspect(r.module, content="evil/loop")
   inspect(r.verdict, content="Clean")
   inspect(r.errors.length(), content="0")
@@ -124,7 +124,7 @@ async test "run_scan reads moon.mod.json fallback" {
     "let x = 1\n",
     create_mode=CreateOrTruncate,
   )
-  let r = @scan.run_scan(dir, { hotlist: [], authoritative_name: "" })
+  let r = @scan.run_scan(dir, { hotlist: [], authoritative_name: "", })
   inspect(r.module, content="a/b")
   inspect(r.version, content="1.0.0")
   inspect(r.errors.contains("cannot parse moon.mod"), content="false")
@@ -144,7 +144,7 @@ async test "run_scan applies s-rules to mbt.md fences only" {
     "prose mentions @shell.Cmd(\"curl\") in passing\n```\n@shell.Cmd(\"curl\", [\"http://x\"]) |> ignore\n```\n",
     create_mode=CreateOrTruncate,
   )
-  let r = @scan.run_scan(dir, { hotlist: [], authoritative_name: "" })
+  let r = @scan.run_scan(dir, { hotlist: [], authoritative_name: "", })
   let s03 = r.findings.filter(f => f.rule == "S03")
   inspect(s03.length(), content="1")
   inspect(s03[0].file, content="src/doc.mbt.md")

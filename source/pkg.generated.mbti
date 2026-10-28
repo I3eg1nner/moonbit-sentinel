@@ -12,9 +12,15 @@ pub fn all_source_rules() -> Array[(String, (SourceCtx) -> Array[@engine.Finding
 
 pub fn combine_rules(Array[@engine.Finding]) -> Array[@engine.Finding]
 
+pub fn downgrade(@engine.Severity) -> @engine.Severity
+
 pub fn extract_fenced_code(String) -> String
 
+pub fn extract_runs_for_test(String, Int) -> Array[(Int, Int)]
+
 pub fn is_source_file(String) -> Bool
+
+pub fn is_test_file(String) -> Bool
 
 pub fn mkctx_for_test(String) -> SourceCtx
 
@@ -26,11 +32,15 @@ pub fn s03(SourceCtx) -> Array[@engine.Finding]
 
 pub fn s04(SourceCtx) -> Array[@engine.Finding]
 
+pub fn s04_payload(SourceCtx) -> Array[@engine.Finding]
+
 pub fn s05(SourceCtx) -> Array[@engine.Finding]
 
 pub fn s07(SourceCtx) -> Array[@engine.Finding]
 
 pub fn s08(SourceCtx) -> Array[@engine.Finding]
+
+pub fn strip_line_comments(String) -> String
 
 // Errors
 

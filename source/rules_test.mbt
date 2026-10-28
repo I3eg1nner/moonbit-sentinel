@@ -1,6 +1,6 @@
 ///|
 fn mkctx(content : String) -> @source.SourceCtx {
-  { file: "src/x.mbt", content, lines: @matchers.LineIndex::build(content) }
+  { file: "src/x.mbt", content, lines: @matchers.LineIndex::build(content), }
 }
 
 ///|

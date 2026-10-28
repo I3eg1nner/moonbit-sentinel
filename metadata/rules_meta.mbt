@@ -115,7 +115,9 @@ pub fn m01(
 }
 
 ///|
-/// M02：author ≠ moonbitlang 但 repo ∈ 官方名集 → Critical。
+/// M02：author ≠ moonbitlang 但 repo ∈ 官方名集 → Critical（官方仓仿冒）；
+/// 或 author 与官方 org 名过近（DL ≤2 且 ≥8 字符）→ Critical（官方作者仿冒，
+/// 如 moonbitlang-team / moonbitlangs / moonbltlang）。
 /// 提供权威名时 author 取权威名（注册者），而官方名比对同时覆盖声明名与权威名
 /// （evil/asynx 声明 name = "moonbitlang/async" 时 repo "async" 命中官方集）。
 /// 官方 repo 比较大小写不敏感（Core/core 视为同名仿冒）。
@@ -143,7 +145,7 @@ pub fn m02(
       category: @engine.Metadata,
       description: "official impersonation",
     }
-    [
+    return [
       rd.finding(
         file="moon.mod",
         line=1,
@@ -151,9 +153,26 @@ pub fn m02(
         message="impersonates official moonbitlang module",
       ),
     ]
-  } else {
-    []
   }
+  // 作者名仿冒：与 "moonbitlang" DL≤2（≥8 字符门槛排除随机短名碰撞）
+  if author.length() >= 8 &&
+    @matchers.damerau_levenshtein(author.to_lower(), "moonbitlang") <= 2 {
+    let rd : @engine.RuleDef = {
+      id: "M02",
+      severity: @engine.Critical,
+      category: @engine.Metadata,
+      description: "official author lookalike",
+    }
+    return [
+      rd.finding(
+        file="moon.mod",
+        line=1,
+        snippet=author,
+        message="author name close to official org \"moonbitlang\"",
+      ),
+    ]
+  }
+  []
 }
 
 ///|
@@ -252,10 +271,11 @@ pub fn m05(m : Manifest, hotlist : Array[String]) -> Array[@engine.Finding] {
   let near = (drepo : String, target : String) => {
     drepo != target &&
     drepo.length() >= 5 &&
-    target.length() >= 5 && {
+    target.length() >= 5 &&
+    ({
       let cap = if drepo.length() < 8 || target.length() < 8 { 1 } else { 2 }
       @matchers.damerau_levenshtein(drepo, target) <= cap
-    }
+    })
   }
   let fs : Array[@engine.Finding] = []
   for dep in m.deps {
@@ -266,9 +286,7 @@ pub fn m05(m : Manifest, hotlist : Array[String]) -> Array[@engine.Finding] {
     }
     let drepo = repo_of(dep)
     let near_hot = hotlist.iter().any(h => near(drepo, repo_of(h)))
-    let near_official = official_repo_names()
-      .iter()
-      .any(o => near(drepo, o))
+    let near_official = official_repo_names().iter().any(o => near(drepo, o))
     if near_hot || near_official {
       fs.push(
         rd.finding(

@@ -19,6 +19,6 @@ test "s06 plain pre-build is high, empty is empty" {
   let fs = @metadata.s06(pkg, "moon.pkg")
   inspect(fs.length(), content="1")
   debug_inspect(fs[0].severity, content="High")
-  let none = @metadata.s06({ imports: [], pre_build: [] }, "moon.pkg")
+  let none = @metadata.s06({ imports: [], pre_build: [], }, "moon.pkg")
   inspect(none.length(), content="0")
 }

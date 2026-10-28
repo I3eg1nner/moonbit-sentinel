@@ -69,7 +69,7 @@ pub fn Automaton::new(patterns : Array[String]) -> Automaton {
       }
     }
   }
-  { next, fail, out, pats }
+  { next, fail, out, pats, }
 }
 
 ///|
@@ -91,7 +91,7 @@ pub fn Automaton::scan(self : Automaton, text : String) -> Array[Hit] {
     state = self.go(state, text[i].to_int())
     for pidx in self.out[state] {
       let len = self.pats[pidx]
-      hits.push({ pattern: pidx, offset: i - len + 1, length: len })
+      hits.push({ pattern: pidx, offset: i - len + 1, length: len, })
     }
   }
   hits

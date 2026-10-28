@@ -1,4 +1,6 @@
 import {
   "audit/mooncake-audit/engine",
   "audit/mooncake-audit/engine/matchers",
+  "moonbitlang/core/encoding/base64",
+  "moonbitlang/core/encoding/utf8",
 }

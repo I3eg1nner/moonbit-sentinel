@@ -77,7 +77,7 @@ pub fn filter_min(r : @report.Report, min_rank : Int) -> @report.Report {
   }
   let kept = r.findings.filter(f => f.severity.rank() >= min_rank)
   let risk = @score.risk_of(kept)
-  { ..r, findings: kept, risk, verdict: @score.verdict_of(risk).to_string() }
+  { ..r, findings: kept, risk, verdict: @score.verdict_of(risk).to_string(), }
 }
 
 ///|
@@ -109,8 +109,8 @@ async fn main {
           return
         }
       }
-      let r = if !(c.module is "") { { ..r, module: c.module } } else { r }
-      let r = if !(c.version is "") { { ..r, version: c.version } } else { r }
+      let r = if !(c.module is "") { { ..r, module: c.module, } } else { r }
+      let r = if !(c.version is "") { { ..r, version: c.version, } } else { r }
       let r = filter_min(r, c.min_sev)
       if c.json {
         println(r.to_json_string())

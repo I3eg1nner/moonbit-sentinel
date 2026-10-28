@@ -92,6 +92,8 @@ test "top-level name accepted without space and in label style" {
 
 ///|
 test "lookalike keys are not the module name" {
-  let m = @metadata.parse_manifest("name_suffix = \"nope\"\nname = \"real/pkg\"\n").unwrap()
+  let m = @metadata.parse_manifest(
+    "name_suffix = \"nope\"\nname = \"real/pkg\"\n",
+  ).unwrap()
   inspect(m.name, content="real/pkg")
 }

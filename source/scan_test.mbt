@@ -9,7 +9,7 @@ test "combine escalates exfil combo" {
     snippet: "",
     message: "",
   }
-  let f2 : @engine.Finding = { ..f1, rule: "S04" }
+  let f2 : @engine.Finding = { ..f1, rule: "S04", }
   let out = @source.combine_rules([f1, f2])
   inspect(out.length(), content="3")
   inspect(out[2].rule, content="S99")
@@ -28,14 +28,14 @@ test "combine escalation preconditions" {
     snippet: "",
     message: "",
   }
-  let s04 : @engine.Finding = { ..base, rule: "S04" }
-  let s01 : @engine.Finding = { ..base, rule: "S01" }
+  let s04 : @engine.Finding = { ..base, rule: "S04", }
+  let s01 : @engine.Finding = { ..base, rule: "S01", }
   // S02+S04 同文件但缺 S01：不升级
   inspect(@source.combine_rules([base, s04]).length(), content="2")
   // S01 单独出现：不升级
   inspect(@source.combine_rules([s01]).length(), content="1")
   // S01 与 S02 分处不同文件：不跨文件组合
-  let other : @engine.Finding = { ..s01, file: "b.mbt" }
+  let other : @engine.Finding = { ..s01, file: "b.mbt", }
   inspect(@source.combine_rules([other, base]).length(), content="2")
   // 同文件 S01+S02+S04：只追加一条 S99
   let out = @source.combine_rules([s01, base, s04])
@@ -158,10 +158,7 @@ test "combine_rules ignores test files" {
     rd.finding(file~, line=1, snippet="", message="")
   }
   // 生产文件：S01+S02 同文件 → S99
-  let prod = [
-    mk("S01", High, "src/a.mbt"),
-    mk("S02", High, "src/a.mbt"),
-  ]
+  let prod = [mk("S01", High, "src/a.mbt"), mk("S02", High, "src/a.mbt")]
   inspect(@source.combine_rules(prod).length(), content="3")
   // 测试文件：同样组合不升级
   let testf = [

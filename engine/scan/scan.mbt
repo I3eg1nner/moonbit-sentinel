@@ -117,19 +117,19 @@ pub async fn run_scan(root : String, opts : ScanOptions) -> @report.Report {
         )
       }
       for f in @metadata.m01(m, opts.hotlist, authoritative=auth) {
-        findings.push({ ..f, file: "moon.mod" })
+        findings.push({ ..f, file: "moon.mod", })
       }
       for f in @metadata.m02(m, authoritative=auth) {
-        findings.push({ ..f, file: "moon.mod" })
+        findings.push({ ..f, file: "moon.mod", })
       }
       for f in @metadata.m03(m, readme_len, has_tests) {
-        findings.push({ ..f, file: "moon.mod" })
+        findings.push({ ..f, file: "moon.mod", })
       }
       for f in @metadata.m04(m, authoritative=auth) {
-        findings.push({ ..f, file: "moon.mod" })
+        findings.push({ ..f, file: "moon.mod", })
       }
       for f in @metadata.m05(m, opts.hotlist) {
-        findings.push({ ..f, file: "moon.mod" })
+        findings.push({ ..f, file: "moon.mod", })
       }
     }
     None => ()
@@ -166,10 +166,16 @@ pub async fn run_scan(root : String, opts : ScanOptions) -> @report.Report {
             let (_, rulefn) = rule
             for f in rulefn(ctx) {
               if test_file {
-                findings.push({ ..f, severity: @source.downgrade(f.severity) })
+                findings.push({ ..f, severity: @source.downgrade(f.severity), })
               } else {
                 findings.push(f)
               }
+            }
+          }
+          // 解码载荷检查只在生产文件执行（测试夹具常有编码样本）
+          if !test_file {
+            for f in @source.s04_payload(ctx) {
+              findings.push(f)
             }
           }
         }

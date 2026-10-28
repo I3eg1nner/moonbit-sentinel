@@ -1,7 +1,7 @@
 ///|
 /// 测试辅助：以默认文件名构造 SourceCtx
 pub fn mkctx_for_test(content : String) -> SourceCtx {
-  { file: "src/x.mbt", content, lines: @matchers.LineIndex::build(content) }
+  { file: "src/x.mbt", content, lines: @matchers.LineIndex::build(content), }
 }
 
 ///|
@@ -111,4 +111,10 @@ pub fn combine_rules(fs : Array[@engine.Finding]) -> Array[@engine.Finding] {
     }
   }
   out
+}
+
+///|
+/// 测试辅助：按 is_b64 提取游程
+pub fn extract_runs_for_test(s : String, min_len : Int) -> Array[(Int, Int)] {
+  extract_runs(s, @matchers.is_b64, min_len)
 }

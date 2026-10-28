@@ -126,3 +126,55 @@ test "prose only mbt.md yields no findings" {
   let fs = @source.s03(mkctx(@source.extract_fenced_code(doc)))
   inspect(fs.length(), content="0")
 }
+
+///|
+test "test files are recognized" {
+  inspect(@source.is_test_file("src/x_test.mbt"), content="true")
+  inspect(@source.is_test_file("src/x_wbtest.mbt"), content="true")
+  inspect(@source.is_test_file("src/x.mbt"), content="false")
+  inspect(@source.is_test_file("lib/x_wbtest.mbt"), content="true")
+}
+
+///|
+test "strip_line_comments blanks comment lines but keeps line numbers" {
+  let src = "let a = 1\n// mentions credentials and token\n  // indented comment\nlet b = 2\n"
+  let out = @source.strip_line_comments(src)
+  let lines = out.split("\n").collect()
+  inspect(lines.length(), content="5") // 行数不变
+  inspect(lines[1].length(), content="0")
+  inspect(lines[2].length(), content="0")
+  inspect(lines[3], content="let b = 2")
+}
+
+///|
+test "combine_rules ignores test files" {
+  let mk = (rule : String, sev : @engine.Severity, file : String) => {
+    let rd : @engine.RuleDef = {
+      id: rule,
+      severity: sev,
+      category: @engine.Source,
+      description: "",
+    }
+    rd.finding(file~, line=1, snippet="", message="")
+  }
+  // 生产文件：S01+S02 同文件 → S99
+  let prod = [
+    mk("S01", High, "src/a.mbt"),
+    mk("S02", High, "src/a.mbt"),
+  ]
+  inspect(@source.combine_rules(prod).length(), content="3")
+  // 测试文件：同样组合不升级
+  let testf = [
+    mk("S01", High, "src/a_wbtest.mbt"),
+    mk("S02", High, "src/a_wbtest.mbt"),
+  ]
+  inspect(@source.combine_rules(testf).length(), content="2")
+}
+
+///|
+test "downgrade lowers one severity step" {
+  inspect(@source.downgrade(Critical) == High, content="true")
+  inspect(@source.downgrade(High) == Medium, content="true")
+  inspect(@source.downgrade(Medium) == Low, content="true")
+  inspect(@source.downgrade(Low) == Low, content="true")
+}

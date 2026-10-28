@@ -13,6 +13,42 @@ pub fn is_source_file(name : String) -> Bool {
 }
 
 ///|
+/// 测试文件：其 S 规则命中在扫描层统一降一级严重度，且不参与 S99 组合升级
+/// （真实误报：测试夹具同时含 raw-IP 字符串与凭据字样，触发 S99 Critical）。
+pub fn is_test_file(name : String) -> Bool {
+  name.has_suffix("_test.mbt") ||
+  name.has_suffix("_wbtest.mbt") ||
+  name.has_suffix("_test.mbt.md")
+}
+
+///|
+/// 行注释剥离：行首（忽略缩进）为 `//` 的行替换为空行，行数不变以保持行号。
+/// 降低注释文字触发的 S02/S03 误报（真实误报：注释里的 "credentials" 字样）。
+/// 保守起见不处理块注释与行尾注释。
+pub fn strip_line_comments(content : String) -> String {
+  let lines : Array[String] = []
+  for line in content.split("\n") {
+    if line.trim(chars=" \t").has_prefix("//") {
+      lines.push("")
+    } else {
+      lines.push(line.to_owned())
+    }
+  }
+  lines.join("\n")
+}
+
+///|
+/// 严重度降一级（pub 供扫描层对测试文件降噪复用）
+pub fn downgrade(s : @engine.Severity) -> @engine.Severity {
+  match s {
+    Critical => High
+    High => Medium
+    Medium => Low
+    Low => Low
+  }
+}
+
+///|
 /// `.mbt.md` 文档：围栏代码块（``` 起止）之外的行替换为空行，行数不变以
 /// 保持 LineIndex 行号与原文一致；S 规则只扫描过滤后的围栏内容。
 pub fn extract_fenced_code(content : String) -> String {
@@ -48,6 +84,10 @@ pub fn combine_rules(fs : Array[@engine.Finding]) -> Array[@engine.Finding] {
   }
   let files : Array[String] = []
   for f in fs {
+    // 测试文件不参与组合升级：夹具同时含 raw-IP 与凭据字样属常态
+    if is_test_file(f.file) {
+      continue
+    }
     if !files.iter().any(x => x == f.file) {
       files.push(f.file)
     }

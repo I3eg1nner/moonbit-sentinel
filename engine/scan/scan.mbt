@@ -155,15 +155,21 @@ pub async fn run_scan(root : String, opts : ScanOptions) -> @report.Report {
           } else {
             content
           }
+          let scanned = @source.strip_line_comments(scanned)
           let ctx : @source.SourceCtx = {
             file: relp,
             content: scanned,
             lines: @matchers.LineIndex::build(scanned),
           }
+          let test_file = @source.is_test_file(relp)
           for rule in rules {
             let (_, rulefn) = rule
             for f in rulefn(ctx) {
-              findings.push(f)
+              if test_file {
+                findings.push({ ..f, severity: @source.downgrade(f.severity) })
+              } else {
+                findings.push(f)
+              }
             }
           }
         }

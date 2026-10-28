@@ -138,7 +138,7 @@ async fn main {
   match parse_args(user_args) {
     Help => println(usage())
     Rules => println(@engine.catalog_text())
-    Version => println("mooncake-audit 0.4.0")
+    Version => println("mooncake-audit 0.4.1")
     Scan(..) as c => {
       let r = try {
         let opts : @scan.ScanOptions = { authoritative_name: c.module, }

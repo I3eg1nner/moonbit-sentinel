@@ -101,3 +101,29 @@ test "client_from_env resolves explicit and fallback vars" {
   // 无任何 key → None
   inspect(mk({}) is None, content="true")
 }
+
+///|
+test "call budget enforces the 20-interaction cap" {
+  inspect(@assess.MAX_LLM_CALLS, content="20")
+  let b = @assess.CallBudget::new()
+  // 当前编排最多用 2 次；预算上限 20
+  inspect(b.spend(), content="true")
+  inspect(b.spend(), content="true")
+  inspect(b.used(), content="2")
+  inspect(b.remaining, content="18")
+}
+
+///|
+test "exhausted budget refuses further calls" {
+  let b = @assess.CallBudget::new(limit=1)
+  inspect(b.spend(), content="true")
+  inspect(b.spend(), content="false") // 耗尽
+  inspect(b.used(), content="1")
+}
+
+///|
+test "client_from_env creates a budgeted client" {
+  let env : Map[String, String] = { "API_KEY": "k" }
+  let c = @assess.client_from_env(k => env.get(k))
+  inspect(c is Some({ budget: { limit: 20, .. }, .. }), content="true")
+}

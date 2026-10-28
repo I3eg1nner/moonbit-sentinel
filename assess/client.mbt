@@ -7,6 +7,7 @@ pub(all) struct OpenAiClient {
   base_url : String // 形如 https://host/v1
   api_key : String
   model : String
+  budget : CallBudget // 交互硬上限（默认 20）
 } derive(Debug)
 
 ///|
@@ -91,5 +92,5 @@ pub fn client_from_env(getenv : (String) -> String?) -> OpenAiClient? {
         None => "gpt-4o-mini"
       }
   }
-  Some({ base_url: base, api_key: key, model, })
+  Some({ base_url: base, api_key: key, model, budget: CallBudget::new(), })
 }

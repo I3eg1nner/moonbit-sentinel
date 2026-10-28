@@ -68,7 +68,7 @@ Options:
 
 ## LLM adjudication (optional)
 
-`--llm` adds a single-call LLM adjudication on top of the deterministic verdict — a minimal agent, no tool loops. The model receives the engine verdict, the findings, and the rule-catalog entries for the rules that fired (budgeted evidence, never the whole package), and must answer one JSON object: `{verdict, confidence, rationale}`. One self-correcting retry on malformed JSON. The result is **advisory** — it is printed alongside and merged into `--format json` output as an `assessment` field, but never overrides the engine verdict.
+`--llm` adds a single-call LLM adjudication on top of the deterministic verdict — a minimal agent, no tool loops. The model receives the engine verdict, the findings, and the rule-catalog entries for the rules that fired (budgeted evidence, never the whole package), and must answer one JSON object: `{verdict, confidence, rationale}`. One self-correcting retry on malformed JSON. The result is **advisory** — it is printed alongside and merged into `--format json` output as an `assessment` field, but never overrides the engine verdict. Every model interaction passes through a hard `CallBudget` (cap: **20 calls** per scan, enforced in the client; the current flow uses at most 2), so the agent stays minimal by construction even if the orchestration evolves.
 
 ```bash
 export MOONCAKE_LLM_KEY=...            # or API_KEY

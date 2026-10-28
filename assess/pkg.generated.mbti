@@ -7,6 +7,8 @@ import {
 }
 
 // Values
+pub const MAX_LLM_CALLS : Int = 20
+
 pub async fn assess_with(@report.Report, OpenAiClient) -> AssessOutcome?
 
 pub fn client_from_env((String) -> String?) -> OpenAiClient?
@@ -35,10 +37,19 @@ pub(all) struct Assessment {
 } derive(@debug.Debug)
 pub impl ToJson for Assessment
 
+pub(all) struct CallBudget {
+  limit : Int
+  mut remaining : Int
+} derive(@debug.Debug)
+pub fn CallBudget::new(limit? : Int) -> Self
+pub fn CallBudget::spend(Self) -> Bool
+pub fn CallBudget::used(Self) -> Int
+
 pub(all) struct OpenAiClient {
   base_url : String
   api_key : String
   model : String
+  budget : CallBudget
 } derive(@debug.Debug)
 pub async fn OpenAiClient::complete(Self, Array[Json]) -> String
 pub fn OpenAiClient::model_name(Self) -> String

@@ -5,6 +5,7 @@ import {
   "minie135/mooncake-audit/score",
   "moonbitlang/async",
   "moonbitlang/async/fs",
+  "minie135/mooncake-audit/assess",
   "moonbitlang/core/abort",
   "moonbitlang/core/env",
   "moonbitlang/core/json",

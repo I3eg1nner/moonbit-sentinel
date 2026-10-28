@@ -8,7 +8,8 @@ pub(all) enum Cmd {
     min_sev~ : Int,
     format~ : String,
     explain~ : Bool,
-    fail_on~ : String
+    fail_on~ : String,
+    llm~ : Bool
   )
   Rules
   Version
@@ -47,6 +48,7 @@ pub fn parse_args(args : Array[String]) -> Cmd {
   let mut format = "human"
   let mut explain = false
   let mut fail_on = ""
+  let mut llm = false
   let n = args.length()
   let mut i = 1
   while i < n {
@@ -56,6 +58,8 @@ pub fn parse_args(args : Array[String]) -> Cmd {
       format = "json"
     } else if a == "--explain" {
       explain = true
+    } else if a == "--llm" {
+      llm = true
     } else if a == "--fail-on" {
       if i + 1 < n && args[i + 1] is ("suspicious" | "malicious") {
         i += 1
@@ -83,7 +87,17 @@ pub fn parse_args(args : Array[String]) -> Cmd {
     }
     i += 1
   }
-  Scan(dir~, module~, version~, json~, min_sev~, format~, explain~, fail_on~)
+  Scan(
+    dir~,
+    module~,
+    version~,
+    json~,
+    min_sev~,
+    format~,
+    explain~,
+    fail_on~,
+    llm~,
+  )
 }
 
 ///|
@@ -109,7 +123,8 @@ fn usage() -> String {
   "  --min-severity s      low|medium|high|critical filter\n" +
   "  --format s            human|json|sarif|md (default human)\n" +
   "  --explain             print the score breakdown (implies human format)\n" +
-  "  --fail-on s           exit non-zero when verdict is malicious|suspicious (CI)\n"
+  "  --fail-on s           exit non-zero when verdict is malicious|suspicious (CI)\n" +
+  "  --llm                 adjudicate the verdict with an LLM (env-configured, advisory)\n"
 }
 
 ///|
@@ -123,7 +138,7 @@ async fn main {
   match parse_args(user_args) {
     Help => println(usage())
     Rules => println(@engine.catalog_text())
-    Version => println("mooncake-audit 0.3.0")
+    Version => println("mooncake-audit 0.4.0")
     Scan(..) as c => {
       let r = try {
         let opts : @scan.ScanOptions = { authoritative_name: c.module, }
@@ -138,6 +153,28 @@ async fn main {
       let r = if !(c.module is "") { { ..r, module: c.module, } } else { r }
       let r = if !(c.version is "") { { ..r, version: c.version, } } else { r }
       let r = filter_min(r, c.min_sev)
+      // LLM 研判（advisory）：env 缺失时提示并跳过
+      let mut assessment : @assess.Assessment? = None
+      if c.llm {
+        match @assess.client_from_env(k => @env.get_env_var(k)) {
+          Some(client) =>
+            match @assess.assess_with(r, client) {
+              Some(outcome) => {
+                assessment = Some(outcome.assessment)
+                let a = outcome.assessment
+                println(
+                  "llm adjudication (\{a.model}, attempts \{outcome.attempts}): \{a.verdict} confidence=\{a.confidence}\n  \{a.rationale}",
+                )
+              }
+              None =>
+                println("llm adjudication: model output unparsable after retry")
+            }
+          None =>
+            println(
+              "llm adjudication skipped: set MOONCAKE_LLM_KEY (or API_KEY)",
+            )
+        }
+      }
       if c.explain {
         println(@score.explain_text(r))
         return
@@ -147,7 +184,22 @@ async fn main {
       } else if c.format is "md" {
         println(@report.summary_md(r))
       } else if c.format is "json" {
-        println(r.to_json_string())
+        match assessment {
+          Some(a) => {
+            // Json Object 只读：借 Json::object 重建带 assessment 的对象
+            let merged : Map[String, Json] = {}
+            match r.to_json() {
+              Object(m) =>
+                for k, v in m {
+                  merged[k] = v
+                }
+              _ => ()
+            }
+            merged["assessment"] = a.to_json()
+            println(Json::object(merged).stringify())
+          }
+          None => println(r.to_json_string())
+        }
       } else {
         println(@report.human_summary(r))
       }

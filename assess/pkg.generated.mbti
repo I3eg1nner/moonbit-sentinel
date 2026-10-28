@@ -1,0 +1,48 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "minie135/mooncake-audit/assess"
+
+import {
+  "minie135/mooncake-audit/report",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub async fn assess_with(@report.Report, OpenAiClient) -> AssessOutcome?
+
+pub fn client_from_env((String) -> String?) -> OpenAiClient?
+
+pub fn messages(@report.Report) -> Array[Json]
+
+pub fn parse_assessment(String, String) -> Assessment?
+
+pub fn user_prompt(@report.Report) -> String
+
+pub fn valid_verdicts() -> Array[String]
+
+// Errors
+
+// Types and methods
+pub(all) struct AssessOutcome {
+  assessment : Assessment
+  attempts : Int
+} derive(@debug.Debug)
+
+pub(all) struct Assessment {
+  verdict : String
+  confidence : Double
+  rationale : String
+  model : String
+} derive(@debug.Debug)
+pub impl ToJson for Assessment
+
+pub(all) struct OpenAiClient {
+  base_url : String
+  api_key : String
+  model : String
+} derive(@debug.Debug)
+pub async fn OpenAiClient::complete(Self, Array[Json]) -> String
+pub fn OpenAiClient::model_name(Self) -> String
+
+// Type aliases
+
+// Traits

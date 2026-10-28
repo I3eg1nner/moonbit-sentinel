@@ -66,6 +66,19 @@ Options:
 | `--explain` | print the score breakdown |
 | `--fail-on s` | `suspicious\|malicious` CI exit gate |
 
+## LLM adjudication (optional)
+
+`--llm` adds a single-call LLM adjudication on top of the deterministic verdict — a minimal agent, no tool loops. The model receives the engine verdict, the findings, and the rule-catalog entries for the rules that fired (budgeted evidence, never the whole package), and must answer one JSON object: `{verdict, confidence, rationale}`. One self-correcting retry on malformed JSON. The result is **advisory** — it is printed alongside and merged into `--format json` output as an `assessment` field, but never overrides the engine verdict.
+
+```bash
+export MOONCAKE_LLM_KEY=...            # or API_KEY
+export MOONCAKE_LLM_BASE_URL=...       # OpenAI-compatible /v1 endpoint (or Base_URL)
+export MOONCAKE_LLM_MODEL=...          # e.g. GLM-5.3-Flash (or Model)
+"$ENGINE" scan /tmp/pkg --llm --explain
+```
+
+Why: purely behavioral rules cannot tell a credential-reading CI runner from a stealer — the LLM layer adjudicates exactly these borderline cases (e.g. it upholds `Malicious` on decode-to-exfiltrate combos while correctly clearing runner-style packages the engine scores just over the line).
+
 ## Try it now
 
 ```bash

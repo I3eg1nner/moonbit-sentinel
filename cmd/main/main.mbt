@@ -12,6 +12,7 @@ pub(all) enum Cmd {
     fail_on~ : String
   )
   Rules
+  Version
   Help
 } derive(Debug)
 
@@ -32,6 +33,9 @@ pub fn parse_args(args : Array[String]) -> Cmd {
   }
   if args[0] is ("rules" | "--rules") {
     return Rules
+  }
+  if args[0] is ("--version" | "-V") {
+    return Version
   }
   if args[0] != "scan" {
     return Help
@@ -155,6 +159,7 @@ async fn main {
   match parse_args(user_args) {
     Help => println(usage())
     Rules => println(@engine.catalog_text())
+    Version => println("mooncake-audit 0.2.0")
     Scan(..) as c => {
       let r = try {
         let opts : @scan.ScanOptions = {

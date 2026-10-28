@@ -66,3 +66,9 @@ fn sev_name_md(s : @engine.Severity) -> String {
     Critical => "Critical"
   }
 }
+
+///|
+/// Markdown 摘要的行数（用于测试与 CI 断言）
+pub fn summary_md_lines(r : Report) -> Int {
+  summary_md(r).split("\n").collect().length()
+}

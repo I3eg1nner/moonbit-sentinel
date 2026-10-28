@@ -1,7 +1,7 @@
 ///|
 pub(all) struct ScanOptions {
-  hotlist : Array[String]
-  /// 注册表权威模块名（来自 mooncakes.io 索引；直扫本地目录时为 ""）
+  /// 注册表权威模块名（来自 mooncakes.io 索引；直扫本地目录时为 ""）。
+  /// 仅用于报告标识，不参与判定。
   authoritative_name : String
 } derive(Debug)
 
@@ -35,12 +35,12 @@ async fn walk_files(dir : String, acc : Array[String]) -> Unit {
 }
 
 ///|
-/// 读取文件头字节用于 S10 魔数探测；超过 2MB 的文件视为资产（模型/字体）跳过
-async fn read_head_opt(path : String) -> Bytes? {
+/// 读取文件内容用于 S10 魔数与内嵌字符串探测；超过 2MB 的文件视为资产（模型/字体）跳过
+async fn read_artifact_opt(path : String) -> Bytes? {
   try {
     let bytes = @fs.read_file(path).binary()
     guard bytes.length() <= 2 * 1024 * 1024 else { return None }
-    Some(bytes[:16].to_bytes())
+    Some(bytes)
   } catch {
     _ => None
   }
@@ -93,59 +93,6 @@ pub async fn run_scan(root : String, opts : ScanOptions) -> @report.Report {
   // walk all files under root
   let files : Array[String] = []
   walk_files(root, files)
-  let mut readme_len = 0
-  let mut has_tests = false
-  for p in files {
-    let name = basename(p)
-    if name.has_prefix("README") {
-      match read_opt(p) {
-        Some(t) => if t.length() > readme_len { readme_len = t.length() }
-        None => ()
-      }
-    }
-    if name.has_suffix("_test.mbt") || name.has_suffix("_wbtest.mbt") {
-      has_tests = true
-    }
-  }
-  // metadata rules (findings carry file "moon.mod")
-  match manifest {
-    Some(m) => {
-      let auth = opts.authoritative_name
-      // M06：manifest 声明名与注册表权威名不一致（仿冒信号）
-      if auth != "" && m.name != auth {
-        let rd06 : @engine.RuleDef = {
-          id: "M06",
-          severity: @engine.High,
-          category: @engine.Metadata,
-          description: "manifest name mismatch",
-        }
-        findings.push(
-          rd06.finding(
-            file="moon.mod",
-            line=1,
-            snippet=m.name,
-            message="manifest name \{m.name} != registry name \{auth}",
-          ),
-        )
-      }
-      for f in @metadata.m01(m, opts.hotlist, authoritative=auth) {
-        findings.push({ ..f, file: "moon.mod", })
-      }
-      for f in @metadata.m02(m, authoritative=auth) {
-        findings.push({ ..f, file: "moon.mod", })
-      }
-      for f in @metadata.m03(m, readme_len, has_tests) {
-        findings.push({ ..f, file: "moon.mod", })
-      }
-      for f in @metadata.m04(m, authoritative=auth) {
-        findings.push({ ..f, file: "moon.mod", })
-      }
-      for f in @metadata.m05(m, opts.hotlist) {
-        findings.push({ ..f, file: "moon.mod", })
-      }
-    }
-    None => ()
-  }
   // pkg files → S06; source files → all source rules
   let rules = @source.all_source_rules()
   for p in files {
@@ -195,7 +142,7 @@ pub async fn run_scan(root : String, opts : ScanOptions) -> @report.Report {
       }
     } else {
       // S10：源码/清单之外的文件做落地产物检查（二进制魔数/嵌套压缩包/脚本）
-      match read_head_opt(p) {
+      match read_artifact_opt(p) {
         Some(head) =>
           for
             f in @source.s10_artifact(

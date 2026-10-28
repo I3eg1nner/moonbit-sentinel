@@ -4,7 +4,6 @@ pub(all) enum Cmd {
     dir~ : String,
     module~ : String,
     version~ : String,
-    hotlist~ : String,
     json~ : Bool,
     min_sev~ : Int,
     format~ : String,
@@ -43,7 +42,6 @@ pub fn parse_args(args : Array[String]) -> Cmd {
   let mut dir = ""
   let mut module = ""
   let mut version = ""
-  let mut hotlist = ""
   let mut json = false
   let mut min_sev = 0
   let mut format = "human"
@@ -63,18 +61,12 @@ pub fn parse_args(args : Array[String]) -> Cmd {
         i += 1
         fail_on = args[i]
       }
-    } else if a
-      is ("--module"
-      | "--version"
-      | "--hotlist"
-      | "--min-severity"
-      | "--format") {
+    } else if a is ("--module" | "--version" | "--min-severity" | "--format") {
       if i + 1 < n {
         i += 1
         match a {
           "--module" => module = args[i]
           "--version" => version = args[i]
-          "--hotlist" => hotlist = args[i]
           "--format" => format = parse_format(args[i])
           _ =>
             min_sev = match @engine.parse_severity(args[i]) {
@@ -91,34 +83,7 @@ pub fn parse_args(args : Array[String]) -> Cmd {
     }
     i += 1
   }
-  Scan(
-    dir~,
-    module~,
-    version~,
-    hotlist~,
-    json~,
-    min_sev~,
-    format~,
-    explain~,
-    fail_on~,
-  )
-}
-
-///|
-pub async fn load_hotlist(path : String) -> Array[String] {
-  if path is "" {
-    return []
-  }
-  try {
-    let text = @fs.read_file(path).text()
-    text
-    .split("\n")
-    .map(l => l.trim(chars=" \t\r").to_owned())
-    .filter(l => l.length() > 0)
-    .collect()
-  } catch {
-    _ => []
-  }
+  Scan(dir~, module~, version~, json~, min_sev~, format~, explain~, fail_on~)
 }
 
 ///|
@@ -139,9 +104,8 @@ fn usage() -> String {
   "  mooncake-audit rules                  print the rule catalog\n" +
   "\n" +
   "options:\n" +
-  "  --module m            registry module name (enables M06 authoritative checks)\n" +
+  "  --module m            module name recorded in the report\n" +
   "  --version v           package version for the report\n" +
-  "  --hotlist file        popular-module list (default: builtin top-100)\n" +
   "  --min-severity s      low|medium|high|critical filter\n" +
   "  --format s            human|json|sarif|md (default human)\n" +
   "  --explain             print the score breakdown (implies human format)\n" +
@@ -159,13 +123,10 @@ async fn main {
   match parse_args(user_args) {
     Help => println(usage())
     Rules => println(@engine.catalog_text())
-    Version => println("mooncake-audit 0.2.0")
+    Version => println("mooncake-audit 0.3.0")
     Scan(..) as c => {
       let r = try {
-        let opts : @scan.ScanOptions = {
-          hotlist: effective_hotlist(load_hotlist(c.hotlist)),
-          authoritative_name: c.module,
-        }
+        let opts : @scan.ScanOptions = { authoritative_name: c.module, }
         @scan.run_scan(c.dir, opts)
       } catch {
         e => {

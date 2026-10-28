@@ -1,8 +1,8 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "audit/mooncake-audit/engine/scan"
+package "minie135/mooncake-audit/engine/scan"
 
 import {
-  "audit/mooncake-audit/report",
+  "minie135/mooncake-audit/report",
   "moonbitlang/core/debug",
 }
 
@@ -13,7 +13,6 @@ pub async fn run_scan(String, ScanOptions) -> @report.Report
 
 // Types and methods
 pub(all) struct ScanOptions {
-  hotlist : Array[String]
   authoritative_name : String
 } derive(@debug.Debug)
 

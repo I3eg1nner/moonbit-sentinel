@@ -10,11 +10,12 @@ It statically analyzes an extracted package directory — manifests, pre-build h
 
 | Family | Rules | Highlights |
 |---|---|---|
-| Metadata | M01–M06 | typo-squatting (Damerau-Levenshtein with same-author exemption), official repo/author impersonation, dependency confusion with owner scoping, manifest↔registry name mismatch |
 | Source | S01–S08 | raw-IP/hardcoded exfil endpoints, credential paths, shell execution, **base64 payload decoding with content inspection** (urls / shells / downloaders → Critical), env sniffing, persistence writes |
 | Hooks | S06 | pre-build command-chain classification: pipe-to-shell, command substitution, base64-decode-exec, reverse-shell indicators |
-| Artifacts | S10 | embedded ELF/PE/Mach-O binaries, nested archives (dropper form), executable scripts |
+| Artifacts | S10 | binary magic detection (ELF/PE/Mach-O), **disguised executables** (benign extension + binary magic), **embedded downloader/reverse-shell strings inside binaries**, nested archives, shebang scripts |
 | Combo | S99 | network + credential/obfuscation in the same file escalates to Critical |
+
+Detection is purely behavioral: metadata identity rules (name/author/repo heuristics) were removed after real-world tuning showed they produced every false positive while contributing no unique malicious signal — see the canaries for what the behavioral engine catches on its own.
 
 Run `mooncake-audit rules` for the full catalog with triggers, examples, and mitigations. Test and demo fixtures are downweighted automatically, and known data-table shapes (tokenizer vocabularies) are guarded against false positives — the engine was tuned against a full crawl of the mooncakes.io registry.
 

@@ -1,8 +1,8 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "audit/mooncake-audit/report"
+package "minie135/mooncake-audit/report"
 
 import {
-  "audit/mooncake-audit/engine",
+  "minie135/mooncake-audit/engine",
   "moonbitlang/core/debug",
 }
 
@@ -10,6 +10,8 @@ import {
 pub fn human_summary(Report) -> String
 
 pub fn summary_md(Report) -> String
+
+pub fn summary_md_lines(Report) -> Int
 
 pub fn to_sarif(Report) -> String
 

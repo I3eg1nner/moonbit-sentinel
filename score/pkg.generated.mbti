@@ -1,9 +1,9 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "audit/mooncake-audit/score"
+package "minie135/mooncake-audit/score"
 
 import {
-  "audit/mooncake-audit/engine",
-  "audit/mooncake-audit/report",
+  "minie135/mooncake-audit/engine",
+  "minie135/mooncake-audit/report",
   "moonbitlang/core/debug",
 }
 

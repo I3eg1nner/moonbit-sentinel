@@ -111,23 +111,35 @@ fn s10_finding(
 }
 
 ///|
-/// 对包内非源码文件的 S10 判定：
+/// 对包内非源码文件的 S10 判定（data 为文件内容，≤2MB）：
 /// - 平台二进制魔数 → High（dropper 强信号）
+/// - 良性扩展名 + 可执行魔数 → High（伪装可执行文件）
 /// - 嵌套压缩包 → Medium（运行时解包投递）
 /// - 带 shebang 的可执行脚本 → Medium
+/// - 可执行二进制内嵌危险命令字符串 → Critical（内嵌下载器/反弹 shell）
 pub fn s10_artifact(
   relp : String,
-  head : Bytes,
+  data : Bytes,
   is_archive : Bool,
   is_script : Bool,
 ) -> Array[@engine.Finding] {
   let fs : Array[@engine.Finding] = []
-  if !is_archive && !is_script {
-    match detect_binary_magic(head) {
-      Some(kind) =>
-        fs.push(s10_finding(relp, High, "embedded \{kind.label()} in package"))
-      None => ()
+  let is_binary = match detect_binary_magic(data) {
+    Some(kind) => {
+      fs.push(s10_finding(relp, High, "embedded \{kind.label()} in package"))
+      true
     }
+    None => false
+  }
+  // 伪装：良性扩展名下藏着可执行魔数
+  if is_binary && !is_archive && !is_script && is_benign_extension(relp) {
+    fs.push(
+      s10_finding(
+        relp,
+        High,
+        "disguised executable: benign extension with platform binary magic",
+      ),
+    )
   }
   if is_archive {
     fs.push(
@@ -138,8 +150,90 @@ pub fn s10_artifact(
       ),
     )
   }
-  if is_script && has_shebang(head) {
+  if is_script && has_shebang(data) {
     fs.push(s10_finding(relp, Medium, "executable script with shebang"))
+  }
+  if is_binary {
+    for f in embedded_command_findings(relp, data) {
+      fs.push(f)
+    }
+  }
+  fs
+}
+
+///|
+/// 常见良性扩展名：这些扩展的文件若检出可执行魔数 → 伪装（High）
+pub fn is_benign_extension(name : String) -> Bool {
+  let exts = [
+    ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".svg", ".webp", ".ico", ".pdf", ".txt",
+    ".md", ".json", ".csv", ".html", ".htm", ".css", ".js", ".ts", ".wasm", ".toml",
+    ".yaml", ".yml", ".xml", ".mbti", ".zip", ".gz", ".tar", ".ttf", ".otf", ".woff",
+    ".woff2",
+  ]
+  exts.iter().any(e => name.has_suffix(e))
+}
+
+///|
+/// 从二进制提取可打印 ASCII 字符串（≥6 连续），
+/// 用于识别内嵌的 URL / shell 入口 / 下载器命令
+pub fn extract_ascii_strings(data : Bytes, min_len : Int) -> Array[String] {
+  let out : Array[String] = []
+  let n = data.length()
+  let mut start = -1
+  for i = 0; i < n; i = i + 1 {
+    let c = data[i].to_int()
+    let printable = c >= 0x20 && c <= 0x7e
+    if printable {
+      if start < 0 {
+        start = i
+      }
+    } else {
+      if start >= 0 && i - start >= min_len {
+        out.push(try! @utf8.decode(data[start:i]))
+      }
+      start = -1
+    }
+  }
+  if start >= 0 && n - start >= min_len {
+    out.push(try! @utf8.decode(data[start:]))
+  }
+  out
+}
+
+///|
+/// 内嵌字符串中的危险内容标记（与 rules_decode 的 payload 标记同族但独立维护：
+/// 二进制里的字符串上下文更弱，要求更完整的命令形态）
+let artifact_string_markers : Array[(Bytes, String)] = [
+  (b"/bin/sh", "/bin/sh"),
+  (b"/bin/bash", "/bin/bash"),
+  (b"curl http", "curl downloader"),
+  (b"wget http", "wget downloader"),
+  (b"sh -c ", "shell -c"),
+  (b"/dev/tcp/", "reverse shell"),
+  (b"chmod +x", "chmod +x"),
+]
+
+///|
+/// 二进制内嵌字符串检查：命中危险标记 → Critical
+/// （投递的可执行文件里嵌着下载器/反弹 shell 命令是强恶意信号；
+/// 直接在原始字节上匹配，避免字符串编码往返）
+fn embedded_command_findings(
+  relp : String,
+  data : Bytes,
+) -> Array[@engine.Finding] {
+  let fs : Array[@engine.Finding] = []
+  for (marker, label) in artifact_string_markers {
+    match bytes_find(data, marker, false) {
+      Some(_) =>
+        fs.push(
+          s10_finding(
+            relp,
+            Critical,
+            "embedded \{label} string in binary artifact",
+          ),
+        )
+      None => ()
+    }
   }
   fs
 }

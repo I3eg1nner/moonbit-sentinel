@@ -1,11 +1,11 @@
 ///|
-test "parse_args scan with json and hotlist flags" {
-  match parse_args(["scan", "/tmp/x", "--json", "--hotlist", "h.txt"]) {
-    Scan(dir~, module~, version~, hotlist~, json~, min_sev~) => {
+test "parse_args scan with json flags" {
+  match parse_args(["scan", "/tmp/x", "--json", "--format", "sarif"]) {
+    Scan(dir~, module~, version~, json~, min_sev~, ..) => {
       inspect(dir, content="/tmp/x")
       inspect(module, content="")
       inspect(version, content="")
-      inspect(hotlist, content="h.txt")
+      inspect(json, content="true")
       inspect(json, content="true")
       inspect(min_sev, content="0")
     }
@@ -32,11 +32,10 @@ test "parse_args flags in any order with value overrides" {
       "scan", "--min-severity", "high", "--json", "--module", "evil/x", "--version",
       "9.9.9", "/d",
     ]) {
-    Scan(dir~, module~, version~, hotlist~, json~, min_sev~) => {
+    Scan(dir~, module~, version~, json~, min_sev~, ..) => {
       inspect(dir, content="/d")
       inspect(module, content="evil/x")
       inspect(version, content="9.9.9")
-      inspect(hotlist, content="")
       inspect(json, content="true")
       inspect(min_sev, content="2")
     }
@@ -46,11 +45,8 @@ test "parse_args flags in any order with value overrides" {
 
 ///|
 test "parse_args first positional wins and dangling flag value ignored" {
-  match parse_args(["scan", "/first", "/second", "--hotlist"]) {
-    Scan(dir~, hotlist~, ..) => {
-      inspect(dir, content="/first")
-      inspect(hotlist, content="")
-    }
+  match parse_args(["scan", "/first", "/second", "--format"]) {
+    Scan(dir~, ..) => inspect(dir, content="/first")
     _ => fail("expected Scan")
   }
 }
@@ -97,25 +93,4 @@ test "filter_min keeps rank-qualified findings and re-scores" {
   let unchanged = filter_min(r, 0)
   inspect(unchanged.risk, content="16")
   inspect(unchanged.findings.length(), content="3")
-}
-
-///|
-async test "load_hotlist trims whitespace and drops empty lines" {
-  let dir = @fs.tmpdir(prefix="cli-hotlist-")
-  let path = dir + "/hot.txt"
-  @fs.write_file(
-    path,
-    "moonbitlang/async\n\n  moonbitlang/core  \r\n",
-    create_mode=CreateOrTruncate,
-  )
-  let lines = load_hotlist(path)
-  inspect(lines.length(), content="2")
-  inspect(lines[0], content="moonbitlang/async")
-  inspect(lines[1], content="moonbitlang/core")
-}
-
-///|
-async test "load_hotlist missing file yields empty list" {
-  let lines = load_hotlist("/nonexistent/definitely-missing-hotlist.txt")
-  inspect(lines.length(), content="0")
 }

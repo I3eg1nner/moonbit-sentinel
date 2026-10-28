@@ -1,9 +1,9 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "audit/mooncake-audit/source"
+package "minie135/mooncake-audit/source"
 
 import {
-  "audit/mooncake-audit/engine",
-  "audit/mooncake-audit/engine/matchers",
+  "minie135/mooncake-audit/engine",
+  "minie135/mooncake-audit/engine/matchers",
   "moonbitlang/core/debug",
 }
 
@@ -16,11 +16,15 @@ pub fn detect_binary_magic(Bytes) -> BinaryKind?
 
 pub fn downgrade(@engine.Severity) -> @engine.Severity
 
+pub fn extract_ascii_strings(Bytes, Int) -> Array[String]
+
 pub fn extract_fenced_code(String) -> String
 
 pub fn extract_runs_for_test(String, Int) -> Array[(Int, Int)]
 
 pub fn has_shebang(Bytes) -> Bool
+
+pub fn is_benign_extension(String) -> Bool
 
 pub fn is_demo_file(String) -> Bool
 

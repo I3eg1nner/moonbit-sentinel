@@ -1,10 +1,10 @@
 import {
-  "minie135/mooncake-audit/engine",
-  "minie135/mooncake-audit/engine/matchers",
-  "minie135/mooncake-audit/metadata",
-  "minie135/mooncake-audit/report",
-  "minie135/mooncake-audit/score",
-  "minie135/mooncake-audit/source",
+  "minie135/moonbit-sentinel/engine",
+  "minie135/moonbit-sentinel/engine/matchers",
+  "minie135/moonbit-sentinel/metadata",
+  "minie135/moonbit-sentinel/report",
+  "minie135/moonbit-sentinel/score",
+  "minie135/moonbit-sentinel/source",
   "moonbitlang/async/fs",
 }
 

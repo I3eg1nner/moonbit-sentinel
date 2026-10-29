@@ -1,5 +1,5 @@
 import {
-  "minie135/mooncake-audit/engine",
+  "minie135/moonbit-sentinel/engine",
   "moonbitlang/core/json",
 }
 

@@ -115,10 +115,8 @@ Layout: `engine/` (finding model, matchers, rule catalog) · `metadata/` (manife
 
 ## Publish to mooncakes.io
 
-1. Set `name` in `moon.mod` to `youraccount/moonbit-sentinel` (keep the version bump).
-2. `moon login` with your mooncakes.io account.
-3. `moon publish` — the registry runs `moon check`/`moon test` on its side; CI here mirrors that gate.
-
+1. `moon.mod` 的 `name` 已是 `minie135/moonbit-sentinel`。
+2. `moon login` 后执行 `moon publish`。
 ## License
 
 Apache-2.0. The scan engine is original work; canary fixtures are hand-written samples.

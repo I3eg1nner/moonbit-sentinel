@@ -1,9 +1,9 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "minie135/mooncake-audit/source"
+package "minie135/moonbit-sentinel/source"
 
 import {
-  "minie135/mooncake-audit/engine",
-  "minie135/mooncake-audit/engine/matchers",
+  "minie135/moonbit-sentinel/engine",
+  "minie135/moonbit-sentinel/engine/matchers",
   "moonbitlang/core/debug",
 }
 

@@ -1,8 +1,8 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "minie135/mooncake-audit/report"
+package "minie135/moonbit-sentinel/report"
 
 import {
-  "minie135/mooncake-audit/engine",
+  "minie135/moonbit-sentinel/engine",
   "moonbitlang/core/debug",
 }
 

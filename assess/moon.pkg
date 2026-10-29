@@ -1,6 +1,6 @@
 import {
-  "minie135/mooncake-audit/engine",
-  "minie135/mooncake-audit/report",
+  "minie135/moonbit-sentinel/engine",
+  "minie135/moonbit-sentinel/report",
   "moonbitlang/async/http",
   "moonbitlang/async/io",
   "moonbitlang/core/json",

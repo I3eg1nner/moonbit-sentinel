@@ -1,6 +1,6 @@
 import {
-  "minie135/mooncake-audit/engine",
-  "minie135/mooncake-audit/engine/matchers",
+  "minie135/moonbit-sentinel/engine",
+  "minie135/moonbit-sentinel/engine/matchers",
   "moonbitlang/core/encoding/base64",
   "moonbitlang/core/encoding/utf8",
 }

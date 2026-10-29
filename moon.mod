@@ -1,4 +1,4 @@
-name = "minie135/mooncake-audit"
+name = "minie135/moonbit-sentinel"
 
 version = "0.4.1"
 

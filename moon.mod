@@ -4,7 +4,7 @@ version = "0.4.1"
 
 readme = "README.md"
 
-repository = "https://github.com/I3eg1nner/mooncake-audit"
+repository = "https://github.com/I3eg1nner/moonbit-sentinel"
 
 license = "Apache-2.0"
 

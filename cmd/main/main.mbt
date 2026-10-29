@@ -112,10 +112,10 @@ pub fn filter_min(r : @report.Report, min_rank : Int) -> @report.Report {
 
 ///|
 fn usage() -> String {
-  "mooncake-audit — static supply-chain detector for mooncakes.io packages\n\n" +
+  "moonbit-sentinel — static supply-chain detector for mooncakes.io packages\n\n" +
   "usage:\n" +
-  "  mooncake-audit scan <dir> [options]   scan an extracted package directory\n" +
-  "  mooncake-audit rules                  print the rule catalog\n" +
+  "  moonbit-sentinel scan <dir> [options]   scan an extracted package directory\n" +
+  "  moonbit-sentinel rules                  print the rule catalog\n" +
   "\n" +
   "options:\n" +
   "  --module m            module name recorded in the report\n" +
@@ -138,7 +138,7 @@ async fn main {
   match parse_args(user_args) {
     Help => println(usage())
     Rules => println(@engine.catalog_text())
-    Version => println("mooncake-audit 0.4.1")
+    Version => println("moonbit-sentinel 0.4.1")
     Scan(..) as c => {
       let r = try {
         let opts : @scan.ScanOptions = { authoritative_name: c.module, }
@@ -214,7 +214,7 @@ async fn main {
         }
         if breach {
           fail(
-            "mooncake-audit: verdict \{r.verdict} meets --fail-on \{c.fail_on}",
+            "moonbit-sentinel: verdict \{r.verdict} meets --fail-on \{c.fail_on}",
           )
         }
       }

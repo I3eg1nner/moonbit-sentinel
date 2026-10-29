@@ -1,6 +1,6 @@
-# mooncake-audit
+# moonbit-sentinel
 
-[![CI](https://github.com/I3eg1nner/mooncake-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/I3eg1nner/mooncake-audit/actions/workflows/ci.yml)
+[![CI](https://github.com/I3eg1nner/moonbit-sentinel/actions/workflows/ci.yml/badge.svg)](https://github.com/I3eg1nner/moonbit-sentinel/actions/workflows/ci.yml)
 
 Static supply-chain security detector for [mooncakes.io](https://mooncakes.io) packages, written in MoonBit.
 
@@ -17,7 +17,7 @@ It statically analyzes an extracted package directory — manifests, pre-build h
 
 Detection is purely behavioral: metadata identity rules (name/author/repo heuristics) were removed after real-world tuning showed they produced every false positive while contributing no unique malicious signal — see the canaries for what the behavioral engine catches on its own.
 
-Run `mooncake-audit rules` for the full catalog with triggers, examples, and mitigations. Test and demo fixtures are downweighted automatically, and known data-table shapes (tokenizer vocabularies) are guarded against false positives — the engine was tuned against a full crawl of the mooncakes.io registry.
+Run `moonbit-sentinel rules` for the full catalog with triggers, examples, and mitigations. Test and demo fixtures are downweighted automatically, and known data-table shapes (tokenizer vocabularies) are guarded against false positives — the engine was tuned against a full crawl of the mooncakes.io registry.
 
 ## Build
 
@@ -93,7 +93,7 @@ Scans the bundled canaries offline: `typo_malicious` → Malicious, `benign_http
 
 ```yaml
 - run: |
-    git clone --depth 1 https://github.com/<you>/mooncake-audit /tmp/auditor
+    git clone --depth 1 https://github.com/I3eg1nner/moonbit-sentinel /tmp/auditor
     cd /tmp/auditor && moon build --target native --release
     ENGINE=$(find _build/native/release -type f -executable | head -1)
     "$ENGINE" scan "$PKG_DIR" --module "$PKG_NAME" --fail-on suspicious
@@ -115,7 +115,7 @@ Layout: `engine/` (finding model, matchers, rule catalog) · `metadata/` (manife
 
 ## Publish to mooncakes.io
 
-1. Set `name` in `moon.mod` to `youraccount/mooncake-audit` (keep the version bump).
+1. Set `name` in `moon.mod` to `youraccount/moonbit-sentinel` (keep the version bump).
 2. `moon login` with your mooncakes.io account.
 3. `moon publish` — the registry runs `moon check`/`moon test` on its side; CI here mirrors that gate.
 

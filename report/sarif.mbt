@@ -62,8 +62,8 @@ pub fn to_sarif(r : Report) -> String {
       {
         "tool": {
           "driver": {
-            "name": "mooncake-audit",
-            "informationUri": "https://mooncakes.io/docs/#/minie135/mooncake-audit",
+            "name": "moonbit-sentinel",
+            "informationUri": "https://github.com/I3eg1nner/moonbit-sentinel",
             "rules": rules,
           },
         },

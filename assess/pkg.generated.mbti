@@ -7,7 +7,7 @@ import {
 }
 
 // Values
-pub const MAX_LLM_CALLS : Int = 20
+pub const MAX_LLM_CALLS : Int32 = 20
 
 pub async fn assess_with(@report.Report, OpenAiClient) -> AssessOutcome?
 
@@ -26,7 +26,7 @@ pub fn valid_verdicts() -> Array[String]
 // Types and methods
 pub(all) struct AssessOutcome {
   assessment : Assessment
-  attempts : Int
+  attempts : Int32
 } derive(@debug.Debug)
 
 pub(all) struct Assessment {
@@ -38,12 +38,12 @@ pub(all) struct Assessment {
 pub impl ToJson for Assessment
 
 pub(all) struct CallBudget {
-  limit : Int
-  mut remaining : Int
+  limit : Int32
+  mut remaining : Int32
 } derive(@debug.Debug)
-pub fn CallBudget::new(limit? : Int) -> Self
+pub fn CallBudget::new(limit? : Int32) -> Self
 pub fn CallBudget::spend(Self) -> Bool
-pub fn CallBudget::used(Self) -> Int
+pub fn CallBudget::used(Self) -> Int32
 
 pub(all) struct OpenAiClient {
   base_url : String

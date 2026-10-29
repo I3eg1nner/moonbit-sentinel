@@ -4,7 +4,7 @@ let http_client_indicators : Array[String] = [
 ]
 
 ///|
-fn find_from(s : String, pat : String, from : Int) -> Int? {
+fn find_from(s : String, pat : String, from : Int32) -> Int32? {
   let n = s.length()
   let m = pat.length()
   if m == 0 || n < m {

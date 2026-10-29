@@ -2,7 +2,7 @@
 pub(all) struct Report {
   module : String
   version : String
-  risk : Int
+  risk : Int32
   verdict : String
   findings : Array[@engine.Finding]
   errors : Array[String]
@@ -69,6 +69,6 @@ fn sev_name_md(s : @engine.Severity) -> String {
 
 ///|
 /// Markdown 摘要的行数（用于测试与 CI 断言）
-pub fn summary_md_lines(r : Report) -> Int {
+pub fn summary_md_lines(r : Report) -> Int32 {
   summary_md(r).split("\n").collect().length()
 }

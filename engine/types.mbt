@@ -7,7 +7,7 @@ pub(all) enum Severity {
 } derive(Eq, Debug, ToJson)
 
 ///|
-pub fn Severity::weight(self : Severity) -> Int {
+pub fn Severity::weight(self : Severity) -> Int32 {
   match self {
     Low => 1
     Medium => 5
@@ -17,7 +17,7 @@ pub fn Severity::weight(self : Severity) -> Int {
 }
 
 ///|
-pub fn Severity::rank(self : Severity) -> Int {
+pub fn Severity::rank(self : Severity) -> Int32 {
   match self {
     Low => 0
     Medium => 1
@@ -49,7 +49,7 @@ pub(all) struct Finding {
   severity : Severity
   category : Category
   file : String
-  line : Int
+  line : Int32
   snippet : String
   message : String
 } derive(Debug, ToJson)
@@ -66,7 +66,7 @@ pub(all) struct RuleDef {
 pub fn RuleDef::finding(
   self : RuleDef,
   file~ : String,
-  line~ : Int,
+  line~ : Int32,
   snippet~ : String,
   message~ : String,
 ) -> Finding {

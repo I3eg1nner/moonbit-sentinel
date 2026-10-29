@@ -12,9 +12,9 @@ pub fn explain_lines(Array[@engine.Finding]) -> Array[ScoreLine]
 
 pub fn explain_text(@report.Report) -> String
 
-pub fn risk_of(Array[@engine.Finding]) -> Int
+pub fn risk_of(Array[@engine.Finding]) -> Int32
 
-pub fn verdict_of(Int) -> Verdict
+pub fn verdict_of(Int32) -> Verdict
 
 // Errors
 
@@ -22,7 +22,7 @@ pub fn verdict_of(Int) -> Verdict
 pub(all) struct ScoreLine {
   rule : String
   severity : @engine.Severity
-  weight : Int
+  weight : Int32
   file : String
   note : String
 } derive(@debug.Debug)

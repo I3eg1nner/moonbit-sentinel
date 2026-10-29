@@ -5,7 +5,7 @@ pub(all) enum Cmd {
     module~ : String,
     version~ : String,
     json~ : Bool,
-    min_sev~ : Int,
+    min_sev~ : Int32,
     format~ : String,
     explain~ : Bool,
     fail_on~ : String,
@@ -101,7 +101,7 @@ pub fn parse_args(args : Array[String]) -> Cmd {
 }
 
 ///|
-pub fn filter_min(r : @report.Report, min_rank : Int) -> @report.Report {
+pub fn filter_min(r : @report.Report, min_rank : Int32) -> @report.Report {
   if min_rank <= 0 {
     return r
   }
@@ -138,7 +138,7 @@ async fn main {
   match parse_args(user_args) {
     Help => println(usage())
     Rules => println(@engine.catalog_text())
-    Version => println("moonbit-sentinel 0.4.1")
+    Version => println("moonbit-sentinel 0.4.2")
     Scan(..) as c => {
       let r = try {
         let opts : @scan.ScanOptions = { authoritative_name: c.module, }

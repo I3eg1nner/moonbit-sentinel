@@ -1,24 +1,24 @@
 ///|
 pub(all) struct Hit {
-  pattern : Int
-  offset : Int
-  length : Int
+  pattern : Int32
+  offset : Int32
+  length : Int32
 } derive(Debug, Eq)
 
 ///|
 struct Automaton {
-  next : Array[Map[Int, Int]]
-  fail : Array[Int]
-  out : Array[Array[Int]]
-  pats : Array[Int]
+  next : Array[Map[Int32, Int32]]
+  fail : Array[Int32]
+  out : Array[Array[Int32]]
+  pats : Array[Int32]
 } derive(Debug)
 
 ///|
 pub fn Automaton::new(patterns : Array[String]) -> Automaton {
-  let next : Array[Map[Int, Int]] = [Map([])]
-  let fail : Array[Int] = [0]
-  let out : Array[Array[Int]] = [[]]
-  let pats : Array[Int] = []
+  let next : Array[Map[Int32, Int32]] = [Map([])]
+  let fail : Array[Int32] = [0]
+  let out : Array[Array[Int32]] = [[]]
+  let pats : Array[Int32] = []
   for pidx, p in patterns {
     pats.push(p.length())
     if p.length() == 0 {
@@ -42,7 +42,7 @@ pub fn Automaton::new(patterns : Array[String]) -> Automaton {
     out[state].push(pidx)
   }
   // BFS 建失配链
-  let queue : Array[Int] = []
+  let queue : Array[Int32] = []
   for _, child in next[0] {
     queue.push(child)
   }
@@ -73,7 +73,7 @@ pub fn Automaton::new(patterns : Array[String]) -> Automaton {
 }
 
 ///|
-fn Automaton::go(self : Automaton, state : Int, u : Int) -> Int {
+fn Automaton::go(self : Automaton, state : Int32, u : Int32) -> Int32 {
   let mut s = state
   for ;; {
     match self.next[s].get(u) {

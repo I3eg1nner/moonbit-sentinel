@@ -138,6 +138,9 @@ pub fn combine_rules(fs : Array[@engine.Finding]) -> Array[@engine.Finding] {
 
 ///|
 /// 测试辅助：按 is_b64 提取游程
-pub fn extract_runs_for_test(s : String, min_len : Int) -> Array[(Int, Int)] {
+pub fn extract_runs_for_test(
+  s : String,
+  min_len : Int32,
+) -> Array[(Int32, Int32)] {
   extract_runs(s, @matchers.is_b64, min_len)
 }

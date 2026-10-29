@@ -3,8 +3,8 @@
 /// 任何编排（当前为单次调用 + 一次重试 ≤2 次）都必须经过预算扣减；
 /// 预算耗尽后 complete 直接失败，防止未来演化为多步循环时失控。
 pub(all) struct CallBudget {
-  limit : Int
-  mut remaining : Int
+  limit : Int32
+  mut remaining : Int32
 } derive(Debug)
 
 ///|
@@ -12,7 +12,7 @@ pub(all) struct CallBudget {
 pub const MAX_LLM_CALLS = 20
 
 ///|
-pub fn CallBudget::new(limit? : Int = MAX_LLM_CALLS) -> CallBudget {
+pub fn CallBudget::new(limit~ : Int32 = MAX_LLM_CALLS) -> CallBudget {
   { limit, remaining: limit, }
 }
 
@@ -28,6 +28,6 @@ pub fn CallBudget::spend(self : CallBudget) -> Bool {
 
 ///|
 /// 已用次数
-pub fn CallBudget::used(self : CallBudget) -> Int {
+pub fn CallBudget::used(self : CallBudget) -> Int32 {
   self.limit - self.remaining
 }

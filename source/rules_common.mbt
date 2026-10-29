@@ -59,7 +59,7 @@ fn contains_any(s : String, pats : Array[String]) -> Bool {
 
 ///|
 /// 最长字符集连续段及其起始偏移（UTF-16 code unit），供 S04 定位行号
-fn longest_run_at(s : String, alphabet : (UInt16) -> Bool) -> (Int, Int) {
+fn longest_run_at(s : String, alphabet : (UInt16) -> Bool) -> (Int32, Int32) {
   let n = s.length()
   let mut best = 0
   let mut best_at = 0

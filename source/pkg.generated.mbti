@@ -16,11 +16,11 @@ pub fn detect_binary_magic(Bytes) -> BinaryKind?
 
 pub fn downgrade(@engine.Severity) -> @engine.Severity
 
-pub fn extract_ascii_strings(Bytes, Int) -> Array[String]
+pub fn extract_ascii_strings(Bytes, Int32) -> Array[String]
 
 pub fn extract_fenced_code(String) -> String
 
-pub fn extract_runs_for_test(String, Int) -> Array[(Int, Int)]
+pub fn extract_runs_for_test(String, Int32) -> Array[(Int32, Int32)]
 
 pub fn has_shebang(Bytes) -> Bool
 

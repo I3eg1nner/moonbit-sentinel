@@ -27,9 +27,9 @@ let payload_marker_names : Array[String] = [
 fn extract_runs(
   s : String,
   pred : (UInt16) -> Bool,
-  min_len : Int,
-) -> Array[(Int, Int)] {
-  let out : Array[(Int, Int)] = []
+  min_len : Int32,
+) -> Array[(Int32, Int32)] {
+  let out : Array[(Int32, Int32)] = []
   let n = s.length()
   let mut start = -1
   for i = 0; i < n; i = i + 1 {
@@ -53,7 +53,7 @@ fn extract_runs(
 ///|
 /// URL 标记后是否跟随主机名形态（≥4 个字母数字后接 . 或数字点）：
 /// 词表 token（如单独的 "http://"）不含主机，不应告警
-fn url_has_host(hay : Bytes, at : Int) -> Bool {
+fn url_has_host(hay : Bytes, at : Int32) -> Bool {
   let n = hay.length()
   let mut i = at
   let mut run = 0
@@ -92,7 +92,7 @@ fn url_has_host(hay : Bytes, at : Int) -> Bool {
 
 ///|
 /// 返回模式首次出现位置；URL 类模式（http://、https://）要求后随主机名
-fn bytes_find(hay : Bytes, needle : Bytes, is_url : Bool) -> Int? {
+fn bytes_find(hay : Bytes, needle : Bytes, is_url : Bool) -> Int32? {
   let n = hay.length()
   let m = needle.length()
   if m == 0 || n < m {
@@ -157,7 +157,7 @@ pub fn s04_payload(ctx : SourceCtx) -> Array[@engine.Finding] {
     description: "decoded payload",
   }
   let fs : Array[@engine.Finding] = []
-  let seen_lines : Array[Int] = []
+  let seen_lines : Array[Int32] = []
   let runs = extract_runs(ctx.content, @matchers.is_b64, 48)
   // 数据表识别（tokenizer 词表/模型清单）：海量短编码行（>20 个游程）不是攻击载荷
   if runs.length() > 20 {

@@ -7,7 +7,7 @@ import {
 }
 
 // Values
-pub fn filter_min(@report.Report, Int) -> @report.Report
+pub fn filter_min(@report.Report, Int32) -> @report.Report
 
 pub fn parse_args(Array[String]) -> Cmd
 
@@ -15,7 +15,7 @@ pub fn parse_args(Array[String]) -> Cmd
 
 // Types and methods
 pub(all) enum Cmd {
-  Scan(dir~ : String, module~ : String, version~ : String, json~ : Bool, min_sev~ : Int, format~ : String, explain~ : Bool, fail_on~ : String, llm~ : Bool)
+  Scan(dir~ : String, module~ : String, version~ : String, json~ : Bool, min_sev~ : Int32, format~ : String, explain~ : Bool, fail_on~ : String, llm~ : Bool)
   Rules
   Version
   Help

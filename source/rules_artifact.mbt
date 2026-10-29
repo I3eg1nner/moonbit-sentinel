@@ -176,7 +176,7 @@ pub fn is_benign_extension(name : String) -> Bool {
 ///|
 /// 从二进制提取可打印 ASCII 字符串（≥6 连续），
 /// 用于识别内嵌的 URL / shell 入口 / 下载器命令
-pub fn extract_ascii_strings(data : Bytes, min_len : Int) -> Array[String] {
+pub fn extract_ascii_strings(data : Bytes, min_len : Int32) -> Array[String] {
   let out : Array[String] = []
   let n = data.length()
   let mut start = -1

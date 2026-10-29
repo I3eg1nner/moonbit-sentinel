@@ -4,7 +4,7 @@
 ///|
 pub(all) struct AssessOutcome {
   assessment : Assessment
-  attempts : Int // 1=首次成功，2=重试后成功
+  attempts : Int32 // 1=首次成功，2=重试后成功
 } derive(Debug)
 
 ///|

@@ -1,6 +1,6 @@
 ///|
 pub(all) struct LineIndex {
-  starts : Array[Int]
+  starts : Array[Int32]
 } derive(Debug)
 
 ///|
@@ -16,7 +16,7 @@ pub fn LineIndex::build(s : String) -> LineIndex {
 }
 
 ///|
-pub fn LineIndex::line_of(self : LineIndex, offset : Int) -> Int {
+pub fn LineIndex::line_of(self : LineIndex, offset : Int32) -> Int32 {
   // 二分：starts 中最后一个 <= offset 的下标 + 1
   let mut lo = 0
   let mut hi = self.starts.length() - 1
@@ -34,7 +34,7 @@ pub fn LineIndex::line_of(self : LineIndex, offset : Int) -> Int {
 }
 
 ///|
-pub fn LineIndex::snippet(self : LineIndex, s : String, line : Int) -> String {
+pub fn LineIndex::snippet(self : LineIndex, s : String, line : Int32) -> String {
   if line < 1 || line > self.starts.length() {
     return ""
   }
@@ -74,7 +74,7 @@ pub fn is_hex(u : UInt16) -> Bool {
 }
 
 ///|
-pub fn longest_run(s : String, alphabet : (UInt16) -> Bool) -> Int {
+pub fn longest_run(s : String, alphabet : (UInt16) -> Bool) -> Int32 {
   let mut best = 0
   let mut cur = 0
   let n = s.length()
@@ -135,15 +135,15 @@ pub fn is_raw_ip_url(s : String) -> Bool {
 }
 
 ///|
-pub fn damerau_levenshtein(a : String, b : String) -> Int {
+pub fn damerau_levenshtein(a : String, b : String) -> Int32 {
   let la = a.length()
   let lb = b.length()
   let ca = a.to_array()
   let cb = b.to_array()
   // d[i][j]，含 OSA 转置
-  let d : Array[Array[Int]] = []
+  let d : Array[Array[Int32]] = []
   for i = 0; i <= la; i = i + 1 {
-    let row : Array[Int] = []
+    let row : Array[Int32] = []
     for j = 0; j <= lb; j = j + 1 {
       if j == 0 {
         row.push(i)

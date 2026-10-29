@@ -6,7 +6,6 @@ import {
   "moonbitlang/async",
   "moonbitlang/async/fs",
   "minie135/moonbit-sentinel/assess",
-  "moonbitlang/core/abort",
   "moonbitlang/core/env",
   "moonbitlang/core/json",
 }

@@ -16,7 +16,7 @@ pub fn Verdict::to_string(self : Verdict) -> String {
 
 ///|
 /// `risk >= 50` → Malicious; `risk >= 15` → Suspicious; otherwise Clean.
-pub fn verdict_of(risk : Int) -> Verdict {
+pub fn verdict_of(risk : Int32) -> Verdict {
   if risk >= 50 {
     Malicious
   } else if risk >= 15 {
@@ -29,7 +29,7 @@ pub fn verdict_of(risk : Int) -> Verdict {
 ///|
 /// Aggregate risk: per rule keep the highest-severity finding, sum weights,
 /// cap at 100.
-pub fn risk_of(findings : Array[@engine.Finding]) -> Int {
+pub fn risk_of(findings : Array[@engine.Finding]) -> Int32 {
   let per_rule : Map[String, @engine.Severity] = Map([])
   for f in findings {
     match per_rule.get(f.rule) {

@@ -6,7 +6,7 @@
 pub(all) struct ScoreLine {
   rule : String
   severity : @engine.Severity
-  weight : Int
+  weight : Int32
   file : String
   note : String
 } derive(Debug)

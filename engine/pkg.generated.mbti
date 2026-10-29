@@ -27,7 +27,7 @@ pub(all) struct Finding {
   severity : Severity
   category : Category
   file : String
-  line : Int
+  line : Int32
   snippet : String
   message : String
 } derive(ToJson, @debug.Debug)
@@ -38,7 +38,7 @@ pub(all) struct RuleDef {
   category : Category
   description : String
 } derive(ToJson, @debug.Debug)
-pub fn RuleDef::finding(Self, file~ : String, line~ : Int, snippet~ : String, message~ : String) -> Finding
+pub fn RuleDef::finding(Self, file~ : String, line~ : Int32, snippet~ : String, message~ : String) -> Finding
 
 pub(all) struct RuleDoc {
   id : String
@@ -57,8 +57,8 @@ pub(all) enum Severity {
   Critical
 } derive(Eq, ToJson, @debug.Debug)
 pub fn Severity::label(Self) -> String
-pub fn Severity::rank(Self) -> Int
-pub fn Severity::weight(Self) -> Int
+pub fn Severity::rank(Self) -> Int32
+pub fn Severity::weight(Self) -> Int32
 
 // Type aliases
 

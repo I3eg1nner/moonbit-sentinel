@@ -21,7 +21,7 @@ Run `moonbit-sentinel rules` for the full catalog with triggers, examples, and m
 
 ## Build
 
-Requires the MoonBit toolchain (`moon`) ≥ 0.10.14.
+Requires the MoonBit toolchain (`moonc`) ≥ 0.10.16 (developed and verified on 0.10.18).
 
 ```bash
 moon check

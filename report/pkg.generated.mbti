@@ -11,7 +11,7 @@ pub fn human_summary(Report) -> String
 
 pub fn summary_md(Report) -> String
 
-pub fn summary_md_lines(Report) -> Int
+pub fn summary_md_lines(Report) -> Int32
 
 pub fn to_sarif(Report) -> String
 
@@ -21,7 +21,7 @@ pub fn to_sarif(Report) -> String
 pub(all) struct Report {
   module : String
   version : String
-  risk : Int
+  risk : Int32
   verdict : String
   findings : Array[@engine.Finding]
   errors : Array[String]
